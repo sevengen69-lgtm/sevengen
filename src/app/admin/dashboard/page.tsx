@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -15,13 +16,14 @@ export default function AdminDashboardPage() {
   const auth = useAuth();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isUserLoading || !firestore) {
-      return; // Aguarda o carregamento do usuário e do firestore
+      return; 
     }
     if (!user) {
-      router.replace('/login?from=/admin/dashboard'); // Não está logado, redireciona para o login
+      router.replace('/login?from=/admin/dashboard'); 
       return;
     }
 
@@ -32,11 +34,15 @@ export default function AdminDashboardPage() {
         if (userDoc.exists() && userDoc.data().role === 'admin') {
           setIsAuthorized(true);
         } else {
-          router.replace('/'); // Não é um admin, redireciona para a página inicial
+          setIsAuthorized(false);
+          router.replace('/'); 
         }
       } catch (error) {
         console.error("Erro ao verificar a função do administrador:", error);
-        router.replace('/'); // Redireciona em caso de erro
+        setIsAuthorized(false);
+        router.replace('/'); 
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -52,14 +58,27 @@ export default function AdminDashboardPage() {
         console.error("Erro ao fazer logout:", error);
     }
   };
-
-  // Exibe uma mensagem de carregamento enquanto verifica a autorização
-  if (isUserLoading || !isAuthorized) {
+  
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-lg font-semibold">Verificando permissões...</p>
           <p className="text-sm text-muted-foreground">Aguarde um momento.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthorized) {
+     return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-destructive">Acesso Negado</p>
+          <p className="text-sm text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+           <Button onClick={() => router.push('/')} variant="link" className="mt-4">
+            Voltar para a página inicial
+          </Button>
         </div>
       </div>
     );
@@ -84,3 +103,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
