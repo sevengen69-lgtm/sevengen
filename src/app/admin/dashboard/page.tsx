@@ -3,30 +3,62 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    // Apenas aguarda o estado de autenticação ser resolvido.
-    if (!isUserLoading) {
-      // Se não houver usuário logado após o carregamento, redireciona para o login.
-      if (!user) {
-        router.replace('/login?from=/admin/dashboard');
-      } else {
-        // Se há um usuário logado, permite o acesso.
+    if (isUserLoading || !firestore) {
+      // Aguarda o usuário e o firestore estarem prontos
+      return;
+    }
+
+    if (!user) {
+      // Se não há usuário logado, redireciona para a página de login
+      router.replace('/login?from=/admin/dashboard');
+      return;
+    }
+
+    // Temos um usuário, agora vamos verificar sua permissão
+    const checkAdminStatus = async () => {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAuthorized(true);
+        } else {
+          // Usuário não é admin, nega o acesso e redireciona
+          setIsAuthorized(false);
+          toast({
+            variant: "destructive",
+            title: "Acesso Negado",
+            description: "Você não tem permissão para acessar esta página.",
+          });
+          router.replace('/');
+        }
+      } catch (error) {
+        console.error("Erro ao verificar permissão de admin:", error);
+        setIsAuthorized(false);
+        router.replace('/');
+      } finally {
         setIsLoading(false);
       }
-    }
-  }, [user, isUserLoading, router]);
+    };
+
+    checkAdminStatus();
+
+  }, [user, isUserLoading, firestore, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -38,19 +70,30 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Tela de carregamento enquanto o estado de autenticação é verificado.
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-semibold">Carregando...</p>
+          <p className="text-lg font-semibold">Verificando permissões...</p>
           <p className="text-sm text-muted-foreground">Aguarde um momento.</p>
         </div>
       </div>
     );
   }
 
-  // Painel de Administrador para usuários autorizados (qualquer usuário logado).
+  if (!isAuthorized) {
+    // Redundância para garantir que o usuário não autorizado não veja o conteúdo.
+    // O redirecionamento já terá sido acionado no useEffect.
+    return (
+       <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-semibold">Acesso Negado</p>
+          <p className="text-sm text-muted-foreground">Você será redirecionado.</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">

@@ -11,21 +11,23 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
+  const firestore = useFirestore();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const from = searchParams.get('from') || '/';
@@ -33,18 +35,25 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!auth) {
-      setError('Serviço de autenticação indisponível.');
+    if (!auth || !firestore) {
+      setError('Serviço de autenticação ou banco de dados indisponível.');
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      
-      if (isAdminLogin) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Após o login, verificar a role do usuário no Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        // Se for admin, redireciona para o dashboard
         router.push('/admin/dashboard');
       } else {
-        router.push(from); // Redirect to the previous page or home for customer
+        // Se for cliente ou a role não existir, redireciona para a página de origem ou inicial
+        router.push(from);
       }
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential') {
@@ -105,16 +114,6 @@ export default function LoginPage() {
                   </span>
                 </Button>
               </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="admin-login"
-                checked={isAdminLogin}
-                onCheckedChange={(checked) => setIsAdminLogin(Boolean(checked))}
-              />
-              <Label htmlFor="admin-login" className="text-sm font-medium leading-none">
-                Sou administrador
-              </Label>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
           </CardContent>
