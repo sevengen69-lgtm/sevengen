@@ -18,15 +18,10 @@
           "format": "email",
           "description": "The user's email address."
         },
-        "phone": {
-          "type": "string",
-          "description": "The user's phone number."
-        },
         "role": {
           "type": "string",
           "description": "The user's role.",
           "enum": [
-            "customer",
             "admin"
           ]
         }
@@ -35,70 +30,13 @@
         "uid",
         "name",
         "email",
-        "role",
-        "phone"
-      ]
-    },
-    "QuoteRequest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "QuoteRequest",
-      "type": "object",
-      "description": "Represents a quote request submitted by a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the quote request."
-        },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the user who submitted the request."
-        },
-        "serviceType": {
-          "type": "string",
-          "description": "The type of service the quote is for (e.g., electrical installation, machinery repair)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the service requested."
-        },
-        "contactName": {
-          "type": "string",
-          "description": "Name of the person requesting the quote."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "Email address of the person requesting the quote.",
-          "format": "email"
-        },
-        "contactPhone": {
-          "type": "string",
-          "description": "Phone number of the person requesting the quote."
-        },
-        "requestDate": {
-          "type": "string",
-          "description": "Date and time when the quote request was submitted.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the quote request (e.g., pending, processing, completed)."
-        }
-      },
-      "required": [
-        "id",
-        "serviceType",
-        "description",
-        "contactName",
-        "contactEmail",
-        "requestDate",
-        "status"
+        "role"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
@@ -115,22 +53,6 @@
             {
               "name": "userId",
               "description": "Unique identifier for the user, matching Firebase Auth UID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/quoteRequests/{quoteRequestId}",
-        "definition": {
-          "entityName": "QuoteRequest",
-          "schema": {
-            "$ref": "#/backend/entities/QuoteRequest"
-          },
-          "description": "Stores quote requests submitted by users.  Each document represents a single quote request.",
-          "params": [
-            {
-              "name": "quoteRequestId",
-              "description": "Unique identifier for the quote request."
             }
           ]
         }

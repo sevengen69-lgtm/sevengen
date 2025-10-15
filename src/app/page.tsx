@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { services } from '@/lib/services';
-import { ContactForm } from '@/components/contact-form';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 
@@ -39,9 +38,6 @@ export default function Home() {
               <Button size="lg" asChild>
                 <a href="#services">Nossos Serviços</a>
               </Button>
-              <Button size="lg" variant="secondary" asChild>
-                <a href="#contact">Solicitar Orçamento</a>
-              </Button>
             </div>
           </div>
         </section>
@@ -72,11 +68,6 @@ export default function Home() {
                     <CardTitle className="font-headline text-xl">{service.title}</CardTitle>
                     <CardDescription className="mt-2">{service.description}</CardDescription>
                   </CardContent>
-                  <CardFooter>
-                    <Button asChild className="w-full" variant="outline">
-                      <a href="#contact">Solicitar Orçamento</a>
-                    </Button>
-                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -110,27 +101,6 @@ export default function Home() {
                   />
                 )}
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="w-full bg-background py-16 md:py-24">
-          <div className="container px-4 md:px-6">
-            <div className="mx-auto mb-12 max-w-2xl text-center">
-              <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Entre em Contato
-              </h2>
-              <p className="mt-4 text-muted-foreground md:text-lg">
-                Pronto para começar seu projeto? Preencha o formulário abaixo e nossa equipe entrará em contato.
-              </p>
-            </div>
-            <div className="mx-auto max-w-xl">
-              <Card>
-                <CardContent className="p-6">
-                  <ContactForm />
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>

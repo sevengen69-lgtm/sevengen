@@ -14,51 +14,20 @@ import { useRouter } from 'next/navigation';
 const navLinks = [
   { href: '#services', label: 'Serviços' },
   { href: '#about', label: 'Sobre' },
-  { href: '#contact', label: 'Contato' },
 ];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    // This effect is kept for potential future use where a distinction
-    // between admin and customer is needed again in the UI, but it's not
-    // currently used to gate access to the admin button itself.
-    if (user && firestore) {
-      const checkAdmin = async () => {
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        // This check is for UI display purposes, not for security.
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      };
-      checkAdmin();
-    } else {
-      setIsAdmin(false);
-    }
-  }, [user, firestore]);
 
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth);
     router.push('/');
   };
-  
-  const getGreeting = () => {
-    if (user?.displayName) {
-      const firstName = user.displayName.split(' ')[0];
-      return `Olá, ${firstName}`;
-    }
-    return "Minha Conta";
-  }
 
   const renderAuthButtons = () => {
     if (isUserLoading) {
@@ -68,7 +37,6 @@ const Header = () => {
     if (user) {
       return (
         <>
-          {/* Always show Admin link for any logged-in user for simplicity */}
           <Button asChild variant="outline">
             <Link href="/admin/dashboard">Admin</Link>
           </Button>
@@ -81,11 +49,8 @@ const Header = () => {
 
     return (
       <>
-        <Button asChild variant="ghost">
-          <Link href="/login">Login</Link>
-        </Button>
         <Button asChild>
-          <Link href="/signup">Cadastre-se</Link>
+          <Link href="/login">Login</Link>
         </Button>
       </>
     );
@@ -116,13 +81,8 @@ const Header = () => {
     return (
        <>
         <SheetClose asChild>
-          <Button asChild size="lg" className="mt-4" variant="ghost">
+          <Button asChild size="lg" className="w-full mt-4">
             <Link href="/login">Login</Link>
-          </Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button asChild size="lg" className="mt-4">
-            <Link href="/signup">Cadastre-se</Link>
           </Button>
         </SheetClose>
       </>

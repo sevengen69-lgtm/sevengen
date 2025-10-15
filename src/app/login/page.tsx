@@ -13,9 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -24,46 +23,27 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const from = searchParams.get('from') || '/';
+  const from = searchParams.get('from') || '/admin/dashboard'; // Default to admin dashboard
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!auth || !firestore) {
-      setError('Serviço de autenticação ou banco de dados indisponível.');
+    if (!auth) {
+      setError('Serviço de autenticação indisponível.');
       return;
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      try {
-        // Após o login, verificar a role do usuário no Firestore
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          // Se for admin, redireciona para o dashboard
-          router.push('/admin/dashboard');
-        } else {
-          // Se for cliente ou a role não existir, redireciona para a página de origem ou inicial
-          router.push(from);
-        }
-      } catch (docError) {
-        console.error("Erro ao buscar documento do usuário:", docError);
-        // Se houver erro ao buscar o documento (ex: permissão), trata como cliente normal
-        // para não bloquear o login de usuários sem documento ou com regras restritivas.
-        router.push(from);
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      // On successful login, always redirect to the intended page (admin dashboard by default)
+      router.push(from);
     } catch (err: any) {
-      if (err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('E-mail ou senha inválidos. Tente novamente.');
       } else {
         setError('Ocorreu um erro inesperado durante o login. Tente novamente.');
@@ -80,9 +60,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login Administrador</CardTitle>
           <CardDescription>
-            Acesse sua conta para gerenciar seus projetos e orçamentos.
+            Acesse o painel de gerenciamento.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
@@ -129,12 +109,6 @@ export default function LoginPage() {
               <Button className="w-full" type="submit">
                 Entrar
               </Button>
-              <div className="mt-4 text-center text-sm">
-                Não tem uma conta?{' '}
-                <Link href="/signup" className="underline">
-                  Cadastre-se
-                </Link>
-              </div>
               <Button variant="link" asChild className="mt-2">
                 <Link href="/">Voltar para o site</Link>
               </Button>
