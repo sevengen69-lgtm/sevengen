@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Menu, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: '#services', label: 'Serviços' },
@@ -15,6 +17,14 @@ const navLinks = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,9 +47,15 @@ const Header = () => {
           <Button asChild>
             <Link href="#contact">Solicitar Orçamento</Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/login">Login</Link>
-          </Button>
+          {user ? (
+            <Button onClick={handleLogout} variant="outline">
+              Sair
+            </Button>
+          ) : (
+            <Button asChild variant="outline">
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
         </nav>
         
         <div className="md:hidden">
@@ -64,9 +80,15 @@ const Header = () => {
                   </SheetClose>
                 ))}
                  <SheetClose asChild>
-                  <Button asChild size="lg" className="mt-4" variant="outline">
-                    <Link href="/login">Login</Link>
-                  </Button>
+                  {user ? (
+                    <Button onClick={handleLogout} size="lg" className="mt-4" variant="outline">
+                      Sair
+                    </Button>
+                  ) : (
+                    <Button asChild size="lg" className="mt-4" variant="outline">
+                      <Link href="/login">Login</Link>
+                    </Button>
+                  )}
                 </SheetClose>
                 <SheetClose asChild>
                   <Button asChild size="lg" className="mt-4">
