@@ -94,7 +94,7 @@ export default function Home() {
                 priority
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20 backdrop-blur-sm" />
             <div className="relative z-10 flex h-full flex-col items-center justify-center space-y-6 px-4 text-center">
               <h1 className="font-headline text-4xl font-bold tracking-tighter md:text-6xl lg:text-7xl">
                 {content.heroTitle}
@@ -200,4 +200,3 @@ export default function Home() {
   );
 }
 
-    
