@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useAuth, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useAuth, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
@@ -14,6 +14,7 @@ import type { QuoteRequest } from '@/lib/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdminDashboardPage() {
@@ -23,7 +24,10 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<QuoteRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+
 
   useEffect(() => {
     if (isUserLoading) {
@@ -68,10 +72,22 @@ export default function AdminDashboardPage() {
     const docRef = doc(firestore, 'quoteRequests', selectedRequest.id);
     updateDocumentNonBlocking(docRef, { status: newStatus });
     
-    // Optimistically update local state
     if (selectedRequest) {
         setSelectedRequest({ ...selectedRequest, status: newStatus });
     }
+  };
+  
+  const openDeleteAlert = (request: QuoteRequest) => {
+    setRequestToDelete(request);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const handleDeleteRequest = () => {
+    if (!firestore || !requestToDelete) return;
+    const docRef = doc(firestore, 'quoteRequests', requestToDelete.id);
+    deleteDocumentNonBlocking(docRef);
+    setIsDeleteAlertOpen(false);
+    setRequestToDelete(null);
   };
 
 
@@ -168,6 +184,9 @@ export default function AdminDashboardPage() {
                         <Button variant="ghost" size="sm" onClick={() => openDetailsModal(request)}>
                           Ver Detalhes
                         </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive/80" onClick={() => openDeleteAlert(request)}>
+                          Excluir
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -178,6 +197,7 @@ export default function AdminDashboardPage() {
         </main>
       </div>
 
+      {/* Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -231,6 +251,25 @@ export default function AdminDashboardPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Confirmation Alert */}
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente a
+              solicitação de orçamento de "{requestToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRequestToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRequest} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
