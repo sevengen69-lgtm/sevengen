@@ -10,12 +10,12 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/firebase';
-import {
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
+import { useAuth, useFirestore } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -23,29 +23,46 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
+  const firestore = useFirestore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const from = searchParams.get('from') || '/';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); // Limpa erros anteriores
-    if (!auth) {
+    setError('');
+    if (!auth || !firestore) {
       setError('Serviço de autenticação indisponível.');
       return;
     }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push(from); // Redirect to the previous page or home
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (isAdminLogin) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          router.push('/admin/dashboard');
+        } else {
+          await auth.signOut(); // Log out user if they aren't an admin
+          setError('Acesso negado. Você não tem permissão de administrador.');
+        }
+      } else {
+        router.push(from); // Redirect to the previous page or home for customer
+      }
     } catch (err: any) {
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/invalid-credential') {
         setError('E-mail ou senha inválidos. Tente novamente.');
       } else {
-        setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+        setError('Ocorreu um erro inesperado durante o login. Tente novamente.');
+        console.error(err);
       }
-      console.error(err);
     }
   };
 
@@ -99,14 +116,24 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="admin-login"
+                checked={isAdminLogin}
+                onCheckedChange={(checked) => setIsAdminLogin(Boolean(checked))}
+              />
+              <Label htmlFor="admin-login" className="text-sm font-medium leading-none">
+                Sou administrador
+              </Label>
+            </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
           </CardContent>
           <CardFooter>
             <div className="flex flex-col w-full">
-               <Button className="w-full" type="submit">
+              <Button className="w-full" type="submit">
                 Entrar
               </Button>
-               <div className="mt-4 text-center text-sm">
+              <div className="mt-4 text-center text-sm">
                 Não tem uma conta?{' '}
                 <Link href="/signup" className="underline">
                   Cadastre-se

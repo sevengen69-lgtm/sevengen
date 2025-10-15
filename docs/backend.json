@@ -25,10 +25,19 @@
         "role": {
           "type": "string",
           "description": "The user's role.",
-          "enum": ["customer"]
+          "enum": [
+            "customer",
+            "admin"
+          ]
         }
       },
-      "required": ["uid", "name", "email", "role", "phone"]
+      "required": [
+        "uid",
+        "name",
+        "email",
+        "role",
+        "phone"
+      ]
     },
     "QuoteRequest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
