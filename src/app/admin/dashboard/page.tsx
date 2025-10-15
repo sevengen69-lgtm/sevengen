@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, orderBy } from 'firebase/firestore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,18 +18,22 @@ import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
+  const [editableRequestData, setEditableRequestData] = useState<Partial<QuoteRequest>>({});
+  
   const [requestToDelete, setRequestToDelete] = useState<QuoteRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-
 
   useEffect(() => {
     if (isUserLoading) {
@@ -61,20 +67,29 @@ export default function AdminDashboardPage() {
   }, [user, isUserLoading, router, firestore]);
 
   const quoteRequestsQuery = useMemoFirebase(() => {
-    if (!firestore || !isAdmin) return null;
+    if (!firestore || isAdmin === false) return null;
     return query(collection(firestore, 'quoteRequests'), orderBy('createdAt', 'desc'));
   }, [firestore, isAdmin]);
 
   const { data: quoteRequests, isLoading: isLoadingQuotes } = useCollection<QuoteRequest>(quoteRequestsQuery);
   
   const handleUpdateStatus = (newStatus: 'pending' | 'contacted' | 'closed') => {
+    if (selectedRequest) {
+        setEditableRequestData(prev => ({ ...prev, status: newStatus }));
+    }
+  };
+
+  const handleSaveChanges = () => {
     if (!firestore || !selectedRequest) return;
     const docRef = doc(firestore, 'quoteRequests', selectedRequest.id);
-    updateDocumentNonBlocking(docRef, { status: newStatus });
-    
-    if (selectedRequest) {
-        setSelectedRequest({ ...selectedRequest, status: newStatus });
-    }
+    updateDocumentNonBlocking(docRef, editableRequestData);
+
+    toast({
+        title: "Sucesso!",
+        description: "As informações da solicitação foram atualizadas.",
+    });
+
+    setIsModalOpen(false);
   };
   
   const openDeleteAlert = (request: QuoteRequest) => {
@@ -88,8 +103,12 @@ export default function AdminDashboardPage() {
     deleteDocumentNonBlocking(docRef);
     setIsDeleteAlertOpen(false);
     setRequestToDelete(null);
+     toast({
+        title: "Excluído!",
+        description: "A solicitação de orçamento foi excluída com sucesso.",
+        variant: "destructive"
+    });
   };
-
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -103,7 +122,18 @@ export default function AdminDashboardPage() {
   
   const openDetailsModal = (request: QuoteRequest) => {
     setSelectedRequest(request);
+    setEditableRequestData({
+      name: request.name,
+      email: request.email,
+      phone: request.phone,
+      status: request.status,
+    });
     setIsModalOpen(true);
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditableRequestData(prev => ({ ...prev, [name]: value }));
   };
 
   if (isAdmin === null || isUserLoading) {
@@ -203,34 +233,32 @@ export default function AdminDashboardPage() {
           <DialogHeader>
             <DialogTitle>Detalhes da Solicitação</DialogTitle>
             <DialogDescription>
-              Informações completas do pedido de orçamento.
+              Informações completas do pedido de orçamento. Você pode editar os campos e salvar.
             </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <span className="col-span-1 text-right font-semibold text-muted-foreground">Nome</span>
-                <span className="col-span-3">{selectedRequest.name}</span>
+                <label htmlFor="name" className="col-span-1 text-right font-semibold text-muted-foreground">Nome</label>
+                <Input id="name" name="name" value={editableRequestData.name || ''} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <span className="col-span-1 text-right font-semibold text-muted-foreground">Email</span>
-                <span className="col-span-3">{selectedRequest.email}</span>
+                <label htmlFor="email" className="col-span-1 text-right font-semibold text-muted-foreground">Email</label>
+                <Input id="email" name="email" value={editableRequestData.email || ''} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <span className="col-span-1 text-right font-semibold text-muted-foreground">Telefone</span>
-                <span className="col-span-3">{selectedRequest.phone || 'Não informado'}</span>
+                <label htmlFor="phone" className="col-span-1 text-right font-semibold text-muted-foreground">Telefone</label>
+                <Input id="phone" name="phone" value={editableRequestData.phone || ''} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-start gap-4">
                 <span className="col-span-1 mt-1 text-right font-semibold text-muted-foreground">Mensagem</span>
-                <p className="col-span-3 whitespace-pre-wrap rounded-md border bg-muted p-3 text-sm">
-                  {selectedRequest.message}
-                </p>
+                <Textarea readOnly value={selectedRequest.message} className="col-span-3 whitespace-pre-wrap rounded-md border bg-muted p-3 text-sm min-h-[100px]" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                  <span className="col-span-1 text-right font-semibold text-muted-foreground">Status</span>
                  <div className="col-span-3">
                    <Select 
-                      value={selectedRequest.status}
+                      value={editableRequestData.status}
                       onValueChange={(value: 'pending' | 'contacted' | 'closed') => handleUpdateStatus(value)}
                    >
                     <SelectTrigger>
@@ -247,7 +275,8 @@ export default function AdminDashboardPage() {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => setIsModalOpen(false)}>Fechar</Button>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveChanges}>Salvar Alterações</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -273,3 +302,5 @@ export default function AdminDashboardPage() {
     </>
   );
 }
+
+    
