@@ -74,6 +74,11 @@ export default function AdminDashboardPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Acesso Negado</h1>
           <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+
+          <Button onClick={handleLogout} variant="destructive" className="mt-4 mr-2">
+             Sair
+          </Button>
+
           <Button onClick={() => router.push('/')} variant="link" className="mt-4">
             Voltar para a página inicial
           </Button>
