@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -51,23 +51,41 @@ export default function SignupPage() {
       // Update the user's profile with their name
       await updateProfile(user, { displayName: name });
       
-      // Create a user document in Firestore
-      await setDoc(doc(firestore, 'users', user.uid), {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userData = {
         uid: user.uid,
         name: name,
         email: email,
         phone: phone,
         role: 'customer', // Default role for new signups
-      });
+      };
 
-      router.push('/'); // Redirect to home page after successful signup
+      // Create a user document in Firestore with non-blocking error handling
+      setDoc(userDocRef, userData)
+        .then(() => {
+          router.push('/'); // Redirect to home page after successful signup and doc creation
+        })
+        .catch((serverError) => {
+          console.error("Firestore error:", serverError);
+          // This is where a permission error from Firestore will be caught.
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          // Emit the error for the global listener to catch and display
+          errorEmitter.emit('permission-error', permissionError);
+          // Also set a local error message for the user
+          setError('Não foi possível salvar os dados do usuário. Verifique as permissões.');
+        });
+
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setError('Este e-mail já está em uso. Tente fazer login.');
       } else {
         setError('Falha ao criar conta. Tente novamente.');
       }
-      console.error(err);
+      console.error("Auth error:", err);
     }
   };
 
