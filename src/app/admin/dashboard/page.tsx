@@ -24,7 +24,7 @@ export default function AdminDashboardPage() {
       return; 
     }
     
-    // Se não houver usuário logado, redireciona para o login
+    // Se não houver usuário logado após o carregamento, redireciona para o login
     if (!user) {
       router.replace('/login?from=/admin/dashboard'); 
       return;
@@ -39,14 +39,12 @@ export default function AdminDashboardPage() {
         if (userDoc.exists() && userDoc.data().role === 'admin') {
           setIsAuthorized(true);
         } else {
-          // Se não for admin, marca como não autorizado e redireciona
+          // Se não for admin, marca como não autorizado
           setIsAuthorized(false);
-          router.replace('/'); 
         }
       } catch (error) {
         console.error("Erro ao verificar a função do administrador:", error);
         setIsAuthorized(false);
-        router.replace('/'); 
       } finally {
         // Finaliza o estado de carregamento
         setIsLoading(false);
@@ -78,7 +76,7 @@ export default function AdminDashboardPage() {
     );
   }
   
-  // Tela para usuários que conseguiram logar mas não são administradores
+  // Tela para usuários que não são administradores autorizados
   if (!isAuthorized) {
      return (
       <div className="flex h-screen items-center justify-center">
@@ -113,4 +111,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
