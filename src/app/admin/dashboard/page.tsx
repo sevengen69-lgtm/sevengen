@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,27 +9,34 @@ import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 
-
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const auth = useAuth();
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (isUserLoading || !firestore) {
-      return; // Wait for user and firestore to be loaded
+      return; // Aguarda o carregamento do usuário e do firestore
     }
     if (!user) {
-      router.replace('/login'); // Not logged in, redirect
+      router.replace('/login?from=/admin/dashboard'); // Não está logado, redireciona para o login
       return;
     }
 
     const checkAdminRole = async () => {
       const userDocRef = doc(firestore, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists() || userDoc.data().role !== 'admin') {
-        router.replace('/'); // Not an admin, redirect to home
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAuthorized(true);
+        } else {
+          router.replace('/'); // Não é um admin, redireciona para a página inicial
+        }
+      } catch (error) {
+        console.error("Erro ao verificar a função do administrador:", error);
+        router.replace('/'); // Redireciona em caso de erro
       }
     };
 
@@ -38,23 +45,31 @@ export default function AdminDashboardPage() {
   
   const handleLogout = async () => {
     if (!auth) return;
-    await signOut(auth);
-    router.push('/login');
+    try {
+        await signOut(auth);
+        router.push('/login');
+    } catch (error) {
+        console.error("Erro ao fazer logout:", error);
+    }
   };
 
-  if (isUserLoading || !user) {
+  // Exibe uma mensagem de carregamento enquanto verifica a autorização
+  if (isUserLoading || !isAuthorized) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Verificando permissões...</p>
+        <div className="text-center">
+          <p className="text-lg font-semibold">Verificando permissões...</p>
+          <p className="text-sm text-muted-foreground">Aguarde um momento.</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <h1 className="text-xl font-semibold">Painel do Administrador</h1>
-         <Button onClick={handleLogout} className="ml-auto">Sair</Button>
+         <Button onClick={handleLogout} variant="outline">Sair</Button>
       </header>
       <main className="flex-1 p-4 sm:px-6 sm:py-0">
         <Card>
