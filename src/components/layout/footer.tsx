@@ -16,9 +16,14 @@ const Footer = () => {
             <Phone className="h-4 w-4" />
             (41) 99788-4294
           </a>
-          <p className="text-center md:text-left">
-            &copy; {currentYear} Sevengen Automação. Todos os direitos reservados.
-          </p>
+          <div className="flex flex-col items-center gap-1 md:items-start">
+            <p className="text-center md:text-left">
+              &copy; {currentYear} Sevengen Automação. Todos os direitos reservados.
+            </p>
+             <p className="text-center md:text-left">
+              CNPJ: 59.213.331/0001-52
+            </p>
+          </div>
         </div>
       </div>
     </footer>
