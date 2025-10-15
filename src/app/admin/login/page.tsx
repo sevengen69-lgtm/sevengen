@@ -17,14 +17,12 @@ import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from 'firebase/firestore';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
-  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -48,7 +46,7 @@ export default function AdminLoginPage() {
       if (userDoc.exists() && userDoc.data().role === 'admin') {
         router.push('/admin/dashboard');
       } else {
-        await auth.signOut();
+        await auth.signOut(); // Critical: Sign out the non-admin user
         setError('Acesso negado. Esta conta não é de um administrador.');
       }
     } catch (err: any) {
@@ -81,7 +79,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="admin@email.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

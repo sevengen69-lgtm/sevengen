@@ -18,14 +18,14 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (isUserLoading) {
-      return; // Aguarda o carregamento do usuário
+      return; // Wait for the user to be loaded
     }
     if (!user) {
-      router.replace('/admin/login'); // Redireciona se não estiver logado
+      router.replace('/admin/login'); // Redirect if not logged in
       return;
     }
     if (!firestore) {
-      setIsAdmin(false);
+      setIsAdmin(false); // If firestore is not available, cannot check admin status
       return;
     }
 
@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error("Erro ao verificar permissões de admin:", error);
+        console.error("Error checking admin permissions:", error);
         setIsAdmin(false);
       }
     };
@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
       await signOut(auth);
       router.push('/');
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
+      console.error("Error on logout:", error);
     }
   };
 
