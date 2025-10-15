@@ -44,15 +44,22 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Após o login, verificar a role do usuário no Firestore
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
+      try {
+        // Após o login, verificar a role do usuário no Firestore
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists() && userDoc.data().role === 'admin') {
-        // Se for admin, redireciona para o dashboard
-        router.push('/admin/dashboard');
-      } else {
-        // Se for cliente ou a role não existir, redireciona para a página de origem ou inicial
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          // Se for admin, redireciona para o dashboard
+          router.push('/admin/dashboard');
+        } else {
+          // Se for cliente ou a role não existir, redireciona para a página de origem ou inicial
+          router.push(from);
+        }
+      } catch (docError) {
+        console.error("Erro ao buscar documento do usuário:", docError);
+        // Se houver erro ao buscar o documento (ex: permissão), trata como cliente normal
+        // para não bloquear o login de usuários sem documento ou com regras restritivas.
         router.push(from);
       }
     } catch (err: any) {
