@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { ArrowRight, Briefcase, FileText } from 'lucide-react';
+import { ArrowRight, Briefcase, FileText, BarChart2, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -126,11 +127,30 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
             </Link>
+
+            {/* Card "Em Breve" */}
+            <div className="relative group cursor-not-allowed">
+              <Card className="transition-all">
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-10 rounded-lg"></div>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Relatórios</CardTitle>
+                  <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Análises</div>
+                  <p className="text-xs text-muted-foreground">
+                    Métricas e insights de desempenho
+                  </p>
+                </CardContent>
+              </Card>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <Badge variant="secondary">Em Breve</Badge>
+              </div>
+            </div>
+
           </div>
         </main>
       </div>
     </>
   );
 }
-
-    
