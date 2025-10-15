@@ -27,11 +27,11 @@ const serviceSchema = z.object({
   icon: z.custom<IconName>(),
   title: z.string().min(1, 'O título do serviço é obrigatório.'),
   description: z.string().min(1, 'A descrição do serviço é obrigatória.'),
-  status: z.enum(['active', 'coming_soon']).optional(),
+  status: z.enum(['active', 'coming_soon']).default('active'),
 });
 
 const formSchema = z.object({
-  logoUrl: z.string().url({ message: 'Por favor, insira uma URL válida.' }).or(z.literal('')),
+  logoUrl: z.string().url({ message: 'Por favor, insira uma URL válida.' }).or(z.literal('')).default(''),
   heroTitle: z.string().min(1, 'O título principal é obrigatório.'),
   heroSubtitle: z.string().min(1, 'O subtítulo é obrigatório.'),
   heroImageUrl: z.string().url({ message: 'Por favor, insira uma URL de imagem válida.' }),
@@ -105,7 +105,13 @@ export default function ContentManagementPage() {
   
   useEffect(() => {
     if (contentData) {
-      form.reset(contentData);
+        const dataWithDefaults = {
+            ...defaultValues,
+            ...contentData,
+            logoUrl: contentData.logoUrl || '',
+            services: contentData.services || [],
+        };
+        form.reset(dataWithDefaults);
     } else {
         form.reset(defaultValues);
     }
@@ -113,7 +119,13 @@ export default function ContentManagementPage() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (!contentRef) return;
-    setDocumentNonBlocking(contentRef, values, { merge: true });
+    
+    const valuesToSave = {
+      ...values,
+      logoUrl: values.logoUrl || '',
+    };
+    
+    setDocumentNonBlocking(contentRef, valuesToSave, { merge: true });
     toast({
       title: 'Conteúdo Salvo!',
       description: 'As alterações na página inicial foram salvas com sucesso.',
@@ -348,3 +360,5 @@ export default function ContentManagementPage() {
     </div>
   );
 }
+
+    
