@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -37,8 +38,10 @@ const Header = () => {
       }
     };
 
-    fetchUserRole();
-  }, [user, firestore]);
+    if (!isUserLoading) {
+      fetchUserRole();
+    }
+  }, [user, firestore, isUserLoading]);
 
 
   const handleLogout = async () => {

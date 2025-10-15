@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +43,8 @@ export default function AdminLoginPage() {
       const user = userCredential.user;
 
       // Check if the user is an admin
-      const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
       if (userDoc.exists() && userDoc.data().role === 'admin') {
         router.push('/admin');
       } else {
@@ -51,7 +53,11 @@ export default function AdminLoginPage() {
       }
 
     } catch (err: any) {
-      setError('Falha ao fazer login. Verifique seu e-mail e senha.');
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        setError('E-mail ou senha inválidos. Tente novamente.');
+      } else {
+        setError('Falha ao fazer login. Verifique seu e-mail e senha.');
+      }
       console.error(err);
     }
   };
