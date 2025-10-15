@@ -6,80 +6,58 @@
       "type": "object",
       "description": "Represents a user of the application.",
       "properties": {
-        "uid": {
-          "type": "string",
-          "description": "The user's unique ID from Firebase Authentication."
-        },
-        "name": {
-          "type": "string",
-          "description": "The user's full name."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
-        },
-        "role": {
-          "type": "string",
-          "description": "The user's role.",
-          "enum": [
-            "admin",
-            "customer"
-          ]
-        }
+        "uid": { "type": "string", "description": "The user's unique ID from Firebase Authentication." },
+        "name": { "type": "string", "description": "The user's full name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "role": { "type": "string", "description": "The user's role.", "enum": ["admin", "customer"] }
       },
-      "required": [
-        "uid",
-        "name",
-        "email",
-        "role"
-      ]
+      "required": ["uid", "name", "email", "role"]
     },
     "QuoteRequest": {
       "title": "Quote Request",
       "type": "object",
       "description": "Represents a user's request for a price quote.",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "The full name of the person requesting the quote."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The email address of the person."
-        },
-        "phone": {
-          "type": "string",
-          "description": "The phone number of the person."
-        },
-        "company": {
-          "type": "string",
-          "description": "The name of the company the person represents (optional)."
-        },
-        "message": {
-          "type": "string",
-          "description": "The detailed message of the quote request."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the quote request.",
-          "enum": ["pending", "contacted", "closed"],
-          "default": "pending"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the quote request was created."
-        }
+        "name": { "type": "string", "description": "The full name of the person requesting the quote." },
+        "email": { "type": "string", "format": "email", "description": "The email address of the person." },
+        "phone": { "type": "string", "description": "The phone number of the person." },
+        "company": { "type": "string", "description": "The name of the company the person represents (optional)." },
+        "message": { "type": "string", "description": "The detailed message of the quote request." },
+        "status": { "type": "string", "description": "The current status of the quote request.", "enum": ["pending", "contacted", "closed"], "default": "pending" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp when the quote request was created." }
       },
       "required": ["name", "email", "message", "status", "createdAt"]
+    },
+    "HomepageContent": {
+      "title": "Homepage Content",
+      "type": "object",
+      "description": "Stores the editable content for the homepage.",
+      "properties": {
+        "logoUrl": { "type": "string", "description": "URL for the site logo in the header." },
+        "heroTitle": { "type": "string", "description": "Main title in the hero section." },
+        "heroSubtitle": { "type": "string", "description": "Subtitle in the hero section." },
+        "heroImageUrl": { "type": "string", "description": "Background image URL for the hero section." },
+        "aboutTitle": { "type": "string", "description": "Title for the About Us section." },
+        "aboutText": { "type": "string", "description": "Main text content for the About Us section." },
+        "aboutImageUrl": { "type": "string", "description": "Image URL for the About Us section." },
+        "services": {
+          "type": "array",
+          "description": "List of services offered.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "icon": { "type": "string", "description": "Name of the lucide-react icon." },
+              "title": { "type": "string", "description": "Title of the service." },
+              "description": { "type": "string", "description": "Description of the service." }
+            },
+            "required": ["icon", "title", "description"]
+          }
+        }
+      }
     }
   },
   "auth": {
-    "providers": [
-      "password"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "structure": [
@@ -87,34 +65,31 @@
         "path": "/users/{userId}",
         "definition": {
           "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
+          "schema": { "$ref": "#/backend/entities/User" },
           "description": "Stores user profile information.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "Unique identifier for the user, matching Firebase Auth UID."
-            }
-          ]
+          "params": [{ "name": "userId", "description": "Unique identifier for the user, matching Firebase Auth UID." }]
         }
       },
       {
         "path": "/quoteRequests/{quoteId}",
         "definition": {
           "entityName": "QuoteRequest",
-          "schema": {
-            "$ref": "#/backend/entities/QuoteRequest"
-          },
+          "schema": { "$ref": "#/backend/entities/QuoteRequest" },
           "description": "Stores all quote requests submitted by users.",
-          "params": [
-            {
-              "name": "quoteId",
-              "description": "Unique identifier for the quote request."
-            }
-          ]
+          "params": [{ "name": "quoteId", "description": "Unique identifier for the quote request." }]
+        }
+      },
+      {
+        "path": "/homepageContent/{pageId}",
+        "definition": {
+          "entityName": "HomepageContent",
+          "schema": { "$ref": "#/backend/entities/HomepageContent" },
+          "description": "Stores editable content for site pages. Use 'main' for the pageId of the homepage.",
+          "params": [{ "name": "pageId", "description": "Identifier for the page content, e.g., 'main'." }]
         }
       }
     ]
   }
 }
+
+    

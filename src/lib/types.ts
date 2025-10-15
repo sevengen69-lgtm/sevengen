@@ -11,3 +11,25 @@ export interface QuoteRequest {
   status: 'pending' | 'contacted' | 'closed';
   createdAt: Timestamp;
 }
+
+export type IconName = 'Wrench' | 'Zap' | 'CircuitBoard' | 'HardHat' | 'ShoppingCart' | 'Repeat' | 'HeartPulse';
+
+export interface ServiceContent {
+  icon: IconName;
+  title: string;
+  description: string;
+}
+
+export interface HomepageContent {
+  id: string;
+  logoUrl?: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroImageUrl: string;
+  aboutTitle: string;
+  aboutText: string;
+  aboutImageUrl: string;
+  services: ServiceContent[];
+}
+
+    

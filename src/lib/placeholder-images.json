@@ -1,16 +1,3 @@
 {
-  "placeholderImages": [
-    {
-      "id": "hero-background",
-      "description": "Equipamentos de automação industrial.",
-      "imageUrl": "https://picsum.photos/seed/equipment/1920/1080",
-      "imageHint": "industrial equipment"
-    },
-    {
-      "id": "about-us",
-      "description": "Equipe trabalhando em um painel de automação com CLP.",
-      "imageUrl": "https://picsum.photos/seed/automation_panel/600/400",
-      "imageHint": "automation panel"
-    }
-  ]
+  "placeholderImages": []
 }

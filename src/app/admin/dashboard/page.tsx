@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { ArrowRight, Briefcase } from 'lucide-react';
+import { ArrowRight, Briefcase, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboardPage() {
@@ -111,9 +111,26 @@ export default function AdminDashboardPage() {
                   </CardContent>
                 </Card>
             </Link>
+            <Link href="/admin/dashboard/content" className="group">
+                <Card className="hover:border-primary hover:shadow-lg transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Conteúdo da Página</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">Editar</div>
+                    <p className="text-xs text-muted-foreground flex items-center">
+                      Modificar textos e imagens da página inicial
+                      <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </p>
+                  </CardContent>
+                </Card>
+            </Link>
           </div>
         </main>
       </div>
     </>
   );
 }
+
+    

@@ -6,11 +6,13 @@ import Link from 'next/link';
 import { Menu, Zap, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { useUser, useAuth, useFirestore } from '@/firebase';
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
+import Image from 'next/image';
+import type { HomepageContent } from '@/lib/types';
 
 const navLinks = [
   { href: '/#services', label: 'Serviços' },
@@ -24,6 +26,13 @@ const Header = () => {
   const firestore = useFirestore();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const contentRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'homepageContent', 'main');
+  }, [firestore]);
+
+  const { data: content } = useDoc<HomepageContent>(contentRef);
 
   useEffect(() => {
     if (user && firestore) {
@@ -159,7 +168,11 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Zap className="h-6 w-6 text-primary" />
+          {content?.logoUrl ? (
+            <Image src={content.logoUrl} alt="Sevengen Logo" width={32} height={32} className="h-8 w-8 object-contain" />
+          ) : (
+            <Zap className="h-6 w-6 text-primary" />
+          )}
           <span className="font-headline text-xl font-bold">Sevengen</span>
         </Link>
         
@@ -214,3 +227,5 @@ const Header = () => {
 };
 
 export default Header;
+
+    
