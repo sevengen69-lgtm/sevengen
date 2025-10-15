@@ -18,6 +18,8 @@ import { ptBR } from 'date-fns/locale';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 
+type QuoteRequestStatus = 'pending' | 'processing' | 'completed';
+
 type QuoteRequest = {
   id: string;
   contactName: string;
@@ -29,8 +31,15 @@ type QuoteRequest = {
     seconds: number;
     nanoseconds: number;
   };
-  status: 'pending' | 'processing' | 'completed';
+  status: QuoteRequestStatus;
 };
+
+const statusTranslations: Record<QuoteRequestStatus, string> = {
+  pending: 'pendente',
+  processing: 'em processamento',
+  completed: 'concluído',
+};
+
 
 export default function AdminPage() {
   const firestore = useFirestore();
@@ -95,7 +104,7 @@ export default function AdminPage() {
                         <TableCell>{request.serviceType}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusVariant(request.status)}>
-                            {request.status}
+                            {statusTranslations[request.status]}
                           </Badge>
                         </TableCell>
                       </TableRow>
