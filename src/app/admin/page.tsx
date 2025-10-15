@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemoFirebase } from '@/firebase/provider';
 import { collection } from 'firebase/firestore';
 import { useCollection, useFirestore } from '@/firebase';
 import {
@@ -43,7 +43,7 @@ const statusTranslations: Record<QuoteRequestStatus, string> = {
 
 export default function AdminPage() {
   const firestore = useFirestore();
-  const quoteRequestsQuery = useMemo(
+  const quoteRequestsQuery = useMemoFirebase(
     () => (firestore ? collection(firestore, 'quoteRequests') : null),
     [firestore]
   );
@@ -56,7 +56,7 @@ export default function AdminPage() {
       case 'processing':
         return 'secondary';
       case 'completed':
-        return 'outline';
+        return 'success';
       default:
         return 'default';
     }
