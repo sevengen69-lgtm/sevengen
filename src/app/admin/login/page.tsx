@@ -45,16 +45,11 @@ export default function AdminLoginPage() {
       const userDocRef = doc(firestore, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       
-      if (userDoc.exists()) {
-        if (userDoc.data().role === 'admin') {
-          router.push('/admin');
-        } else {
-          await auth.signOut();
-          setError('Acesso negado. Você não tem permissão de administrador.');
-        }
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        router.push('/admin');
       } else {
         await auth.signOut();
-        setError('Usuário não encontrado no banco de dados. A conta pode não estar configurada corretamente.');
+        setError('Acesso negado. Você não tem permissão de administrador.');
       }
 
     } catch (err: any) {
