@@ -13,12 +13,28 @@ import { initializeFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Firestore } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
-  email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
-  phone: z.string().optional(),
-  message: z.string().optional(),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+    email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }).optional().or(z.literal('')),
+    phone: z.string().optional(),
+    message: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.email && !data.phone) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['email'],
+        message: 'É necessário preencher pelo menos um campo de contato: e-mail ou telefone.',
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['phone'],
+        message: 'É necessário preencher pelo menos um campo de contato: e-mail ou telefone.',
+      });
+    }
+  });
+
 
 export default function QuoteRequestForm() {
   const { toast } = useToast();
@@ -109,7 +125,7 @@ export default function QuoteRequestForm() {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone (Opcional)</FormLabel>
+              <FormLabel>Telefone</FormLabel>
               <FormControl>
                 <Input placeholder="(XX) XXXXX-XXXX" {...field} />
               </FormControl>
