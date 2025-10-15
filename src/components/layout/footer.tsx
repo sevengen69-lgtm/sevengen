@@ -20,6 +20,9 @@ const Footer = () => {
             &copy; {currentYear} Sevengen Automação. Todos os direitos reservados.
           </p>
         </div>
+        <Link href="/admin/login" className="text-xs text-muted-foreground transition-colors hover:text-primary">
+          Admin
+        </Link>
       </div>
     </footer>
   );
