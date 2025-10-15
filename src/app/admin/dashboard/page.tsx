@@ -13,52 +13,14 @@ import { doc, getDoc } from 'firebase/firestore';
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (isUserLoading || !firestore) {
-      // Aguarda o usuário e o firestore estarem prontos
-      return;
-    }
-
-    if (!user) {
-      // Se não há usuário logado, redireciona para a página de login
+    if (!isUserLoading && !user) {
+      // Se não há usuário logado após o carregamento, redireciona para a página de login
       router.replace('/login?from=/admin/dashboard');
-      return;
     }
-
-    // Temos um usuário, agora vamos verificar sua permissão
-    const checkAdminStatus = async () => {
-      const userDocRef = doc(firestore, 'users', user.uid);
-      try {
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          setIsAuthorized(true);
-        } else {
-          // Usuário não é admin, nega o acesso e redireciona
-          setIsAuthorized(false);
-          toast({
-            variant: "destructive",
-            title: "Acesso Negado",
-            description: "Você não tem permissão para acessar esta página.",
-          });
-          router.replace('/');
-        }
-      } catch (error) {
-        console.error("Erro ao verificar permissão de admin:", error);
-        setIsAuthorized(false);
-        router.replace('/');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-
-  }, [user, isUserLoading, firestore, router]);
+  }, [user, isUserLoading, router]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -70,25 +32,12 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (isLoading) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-semibold">Verificando permissões...</p>
+          <p className="text-lg font-semibold">Carregando...</p>
           <p className="text-sm text-muted-foreground">Aguarde um momento.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthorized) {
-    // Redundância para garantir que o usuário não autorizado não veja o conteúdo.
-    // O redirecionamento já terá sido acionado no useEffect.
-    return (
-       <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg font-semibold">Acesso Negado</p>
-          <p className="text-sm text-muted-foreground">Você será redirecionado.</p>
         </div>
       </div>
     );
@@ -103,10 +52,10 @@ export default function AdminDashboardPage() {
       <main className="flex-1 p-4 sm:px-6 sm:py-0">
         <Card>
           <CardHeader>
-            <CardTitle>Bem-vindo, Administrador!</CardTitle>
+            <CardTitle>Bem-vindo!</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Esta é a sua área de administração. Em breve, novas funcionalidades estarão disponíveis aqui.</p>
+            <p>Esta é a sua área de administração. Você acessou com sucesso.</p>
           </CardContent>
         </Card>
       </main>
