@@ -10,6 +10,8 @@ export interface QuoteRequest {
   message: string;
   status: 'pending' | 'contacted' | 'closed';
   createdAt: Timestamp;
+  userId?: string;
+  isRegisteredUser?: boolean;
 }
 
 export type IconName = 'Wrench' | 'Zap' | 'CircuitBoard' | 'HardHat' | 'ShoppingCart' | 'Repeat' | 'HeartPulse';
@@ -31,5 +33,3 @@ export interface HomepageContent {
   aboutImageUrl: string;
   services: ServiceContent[];
 }
-
-    

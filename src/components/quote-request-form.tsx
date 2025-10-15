@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { initializeFirebase, addDocumentNonBlocking } from '@/firebase';
+import { initializeFirebase, addDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, serverTimestamp, Firestore } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -39,15 +39,13 @@ const formSchema = z
 
 export default function QuoteRequestForm() {
   const { toast } = useToast();
-  // State to hold the firestore instance
+  const { user } = useUser();
   const [firestore, setFirestore] = useState<Firestore | null>(null);
 
-  // Initialize Firebase on the client and get the firestore instance
   useEffect(() => {
     const { firestore: fs } = initializeFirebase();
     setFirestore(fs);
   }, []);
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +57,15 @@ export default function QuoteRequestForm() {
       message: '',
     },
   });
+  
+  useEffect(() => {
+    if (user) {
+        form.reset({
+            name: user.displayName || '',
+            email: user.email || '',
+        })
+    }
+  }, [user, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!firestore) {
@@ -76,13 +83,17 @@ export default function QuoteRequestForm() {
         ...values,
         status: 'pending',
         createdAt: serverTimestamp(),
+        userId: user ? user.uid : null,
+        isRegisteredUser: !!user,
       });
 
       toast({
         title: 'Solicitação Enviada!',
         description: 'Seu pedido de orçamento foi enviado com sucesso. Entraremos em contato em breve.',
       });
-      form.reset();
+      if (!user) {
+        form.reset();
+      }
     } catch (error) {
       console.error('Error submitting quote request: ', error);
       toast({

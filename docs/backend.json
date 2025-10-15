@@ -24,7 +24,9 @@
         "company": { "type": "string", "description": "The name of the company the person represents (optional)." },
         "message": { "type": "string", "description": "The detailed message of the quote request." },
         "status": { "type": "string", "description": "The current status of the quote request.", "enum": ["pending", "contacted", "closed"], "default": "pending" },
-        "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp when the quote request was created." }
+        "createdAt": { "type": "string", "format": "date-time", "description": "The timestamp when the quote request was created." },
+        "userId": { "type": "string", "description": "The UID of the user who submitted the request, if they were logged in." },
+        "isRegisteredUser": { "type": "boolean", "description": "Flag indicating if the request was submitted by a registered user." }
       },
       "required": ["name", "email", "message", "status", "createdAt"]
     },
@@ -91,5 +93,3 @@
     ]
   }
 }
-
-    

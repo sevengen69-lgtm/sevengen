@@ -18,7 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Phone, Calendar, Trash2, Edit, Building } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Trash2, Edit, Building, LogIn, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminQuotesPage() {
@@ -126,12 +126,25 @@ export default function AdminQuotesPage() {
                     {request.status === 'pending' ? 'Pendente' : 'Contatado'}
                 </Badge>
             </CardTitle>
-            {request.company && (
-              <p className="flex items-center text-sm font-medium text-muted-foreground pt-1">
-                <Building className="w-4 h-4 mr-2" />
-                {request.company}
-              </p>
-            )}
+            <div className="flex flex-col space-y-1 pt-1">
+                {request.isRegisteredUser ? (
+                    <p className="flex items-center text-xs font-semibold text-green-600">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Usuário Cadastrado
+                    </p>
+                ) : (
+                    <p className="flex items-center text-xs font-medium text-muted-foreground">
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Visitante
+                    </p>
+                )}
+                {request.company && (
+                  <p className="flex items-center text-sm font-medium text-muted-foreground">
+                    <Building className="w-4 h-4 mr-2" />
+                    {request.company}
+                  </p>
+                )}
+            </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-3">
             <div className="flex items-center text-sm text-muted-foreground">
@@ -165,12 +178,25 @@ export default function AdminQuotesPage() {
                 <span className="flex-1">{request.name}</span>
                 <Badge variant='success'>Fechado</Badge>
             </CardTitle>
-            {request.company && (
-              <p className="flex items-center text-sm font-medium text-muted-foreground pt-1">
-                <Building className="w-4 h-4 mr-2" />
-                {request.company}
-              </p>
-            )}
+            <div className="flex flex-col space-y-1 pt-1">
+                {request.isRegisteredUser ? (
+                    <p className="flex items-center text-xs font-semibold text-green-600">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Usuário Cadastrado
+                    </p>
+                ) : (
+                    <p className="flex items-center text-xs font-medium text-muted-foreground">
+                        <LogIn className="w-4 h-4 mr-2" />
+                        Visitante
+                    </p>
+                )}
+                {request.company && (
+                  <p className="flex items-center text-sm font-medium text-muted-foreground">
+                    <Building className="w-4 h-4 mr-2" />
+                    {request.company}
+                  </p>
+                )}
+            </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-3">
             <div className="flex items-center text-sm text-muted-foreground">
