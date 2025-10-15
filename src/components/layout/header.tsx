@@ -46,6 +46,14 @@ const Header = () => {
     await signOut(auth);
     router.push('/');
   };
+  
+  const getGreeting = () => {
+    if (user?.displayName) {
+      const firstName = user.displayName.split(' ')[0];
+      return `Olá, ${firstName}`;
+    }
+    return "Minha Conta";
+  }
 
   const renderAuthButtons = () => {
     if (isUserLoading) {
@@ -62,7 +70,7 @@ const Header = () => {
           )}
            {userRole === 'customer' && (
             <Button asChild variant="outline">
-              <Link href="/dashboard">Minha Conta</Link>
+              <Link href="/dashboard">{getGreeting()}</Link>
             </Button>
           )}
           <Button onClick={handleLogout} variant="ghost">
@@ -102,7 +110,7 @@ const Header = () => {
            {userRole === 'customer' && (
             <SheetClose asChild>
                 <Button asChild size="lg" className="w-full mt-4" variant="outline">
-                    <Link href="/dashboard">Minha Conta</Link>
+                    <Link href="/dashboard">{getGreeting()}</Link>
                 </Button>
             </SheetClose>
           )}

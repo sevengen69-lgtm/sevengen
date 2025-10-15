@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { useState } from 'react';
@@ -45,6 +46,9 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      
+      // Update the user's profile with their name
+      await updateProfile(user, { displayName: name });
       
       // Create a user document in Firestore
       await setDoc(doc(firestore, 'users', user.uid), {
