@@ -18,13 +18,17 @@
           "format": "email",
           "description": "The user's email address."
         },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
         "role": {
           "type": "string",
           "description": "The user's role.",
           "enum": ["admin", "customer"]
         }
       },
-      "required": ["uid", "name", "email", "role"]
+      "required": ["uid", "name", "email", "role", "phone"]
     },
     "QuoteRequest": {
       "$schema": "http://json-schema.org/draft-07/schema#",

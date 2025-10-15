@@ -28,6 +28,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -55,6 +56,7 @@ export default function SignupPage() {
         uid: user.uid,
         name: name,
         email: email,
+        phone: phone,
         role: 'customer', // Default role for new signups
       });
 
@@ -104,6 +106,17 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+             <div className="grid gap-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="(00) 00000-0000"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
