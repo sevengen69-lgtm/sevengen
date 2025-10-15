@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -8,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { QuoteRequestSchema, type QuoteRequestForm } from "@/lib/schemas";
 import { services } from "@/lib/services";
 import { submitQuoteRequest } from "@/app/actions";
+import { useUser } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "./ui/skeleton";
 
 export function ContactForm() {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
 
   const form = useForm<QuoteRequestForm>({
     resolver: zodResolver(QuoteRequestSchema),
@@ -45,7 +49,14 @@ export function ContactForm() {
 
   const onSubmit = (values: QuoteRequestForm) => {
     startTransition(async () => {
-      const result = await submitQuoteRequest(values);
+      // If user is logged in, use their data. Otherwise, use form data.
+      const submissionData = {
+        ...values,
+        name: user?.displayName || values.name,
+        email: user?.email || values.email,
+      };
+
+      const result = await submitQuoteRequest(submissionData);
       if (result.success) {
         toast({
           title: "Sucesso!",
@@ -65,47 +76,59 @@ export function ContactForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome Completo</FormLabel>
-              <FormControl>
-                <Input placeholder="Seu nome" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {isUserLoading && (
+          <div className="space-y-6">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </div>
+        )}
+
+        {!isUserLoading && !user && (
+          <>
             <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
+              control={form.control}
+              name="name"
+              render={({ field }) => (
                 <FormItem>
-                <FormLabel>E-mail</FormLabel>
-                <FormControl>
-                    <Input placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
+                  <FormLabel>Nome Completo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Seu nome" {...field} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
-            )}
+              )}
             />
-            <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Telefone (Opcional)</FormLabel>
-                <FormControl>
-                    <Input placeholder="(00) 00000-0000" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-        </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-mail</FormLabel>
+                    <FormControl>
+                      <Input placeholder="seu@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(00) 00000-0000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </>
+        )}
+
         <FormField
           control={form.control}
           name="service"
@@ -154,3 +177,4 @@ export function ContactForm() {
     </Form>
   );
 }
+
