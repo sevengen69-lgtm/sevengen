@@ -1,60 +1,36 @@
 /**
- * @fileoverview Firestore Security Rules for the QuoteRequest collection.
+ * @file Firebase Security Rules for Firestore.
  *
- * Core Philosophy:
- * This ruleset allows any authenticated user to create quote requests. Only the creator can read, update, or delete their own requests.
- *
- * Data Structure:
- * All quote request data is stored in the top-level `/quoteRequests/{quoteRequestId}` collection.
- *
- * Key Security Decisions:
- * - User listing of quote requests is only allowed for the request creator.
- * - Data shape is not strictly validated during the prototyping phase to allow for rapid iteration.
- *
- * Denormalization for Authorization:
- *  - An `id` field must exist inside the `quoteRequests` documents and the value must be equal to the `quoteRequestId` in the path.
+ * @Core Philosophy: This ruleset enforces a security model where only authenticated users can list quote requests.
+ *   Write operations are forbidden for all users.
+ * @Data Structure: Quote requests are stored in a top-level collection `/quoteRequests/{quoteRequestId}`.
+ * @Key Security Decisions: Listing `quoteRequests` is only allowed for authenticated users. Writes are forbidden.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secures the /quoteRequests collection. Allows authenticated users to create quote requests, and only the creator can read, update, or delete their own requests.
+     * @description Allows authenticated users to list quote requests. Writes are forbidden.
      * @path /quoteRequests/{quoteRequestId}
-     * @allow (create) - An authenticated user creates a new quote request.
-     *   - Auth: { uid: 'user_abc' }
-     *   - Request Data: { id: 'user_abc', serviceType: 'electrical', description: 'wiring', contactName: 'Alice', contactEmail: 'alice@example.com', requestDate: '2024-01-01', status: 'pending' }
-     * @allow (get, list) - The creator (user_abc) reads their own quote request.
-     *   - Auth: { uid: 'user_abc' }
-     * @allow (update, delete) - The creator (user_abc) updates their own quote request.
-     *   - Auth: { uid: 'user_abc' }
-     * @deny (create) - An unauthenticated user tries to create a new quote request.
-     *   - Auth: null
-     *   - Request Data: { id: 'unauth_user', serviceType: 'plumbing', description: 'leaky faucet', contactName: 'Bob', contactEmail: 'bob@example.com', requestDate: '2024-01-02', status: 'pending' }
-     * @deny (get, list, update, delete) - A different user (user_xyz) attempts to read, update or delete a quote request created by user_abc.
-     *   - Auth: { uid: 'user_xyz' }
-     * @principle Enforces document ownership for writes, authenticated access for reads.
+     * @allow (list) User with valid authentication attempts to list quote requests.
+     * @deny (list) Unauthenticated user attempts to list quote requests.
+     * @deny (create) Any user attempts to create a quote request.
+     * @deny (update) Any user attempts to update a quote request.
+     * @deny (delete) Any user attempts to delete a quote request.
+     * @principle Only authenticated users are able to list quote requests.
      */
     match /quoteRequests/{quoteRequestId} {
-      // Helper function to check if the user is signed in
-      function isSignedIn() {
-        return request.auth != null;
-      }
+      allow get: if false;
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
 
-      // Helper function to check if the user is the owner of the document
-      function isOwner(quoteRequestId) {
-        return request.auth.uid == quoteRequestId;
-      }
-
-      // Helper function to check if the user is the owner of the EXISTING document
-      function isExistingOwner(quoteRequestId) {
-        return isOwner(quoteRequestId) && resource != null;
-      }
-      allow get: if isSignedIn() && isOwner(quoteRequestId);
-      allow list: if isSignedIn() && isOwner(quoteRequestId);
-      allow create: if isSignedIn() && request.resource.data.id == request.auth.uid;
-      allow update: if isExistingOwner(quoteRequestId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(quoteRequestId);
+    // Helper function to determine if a user is signed in.
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
