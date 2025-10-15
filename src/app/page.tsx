@@ -30,7 +30,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
           <div className="relative z-10 flex h-full flex-col items-center justify-center space-y-6 px-4 text-center">
             <h1 className="font-headline text-4xl font-bold tracking-tighter md:text-6xl lg:text-7xl">
-              VoltaTech Solutions
+              Sevengen Automação
             </h1>
             <p className="max-w-3xl text-lg text-primary-foreground/90 md:text-xl">
               Excelência em Elétrica e Automação para Indústria e Residências.
@@ -89,10 +89,10 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div className="space-y-4">
                 <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Sobre a VoltaTech
+                  Sobre a Sevengen
                 </h2>
                 <p className="text-muted-foreground md:text-lg">
-                  A VoltaTech Solutions é sua parceira de confiança em serviços elétricos e de automação. Com uma equipe de especialistas qualificados e anos de experiência, nos dedicamos a fornecer soluções inovadoras, seguras e eficientes para clientes residenciais, comerciais e industriais.
+                  A Sevengen Automação é sua parceira de confiança em serviços elétricos e de automação. Com uma equipe de especialistas qualificados e anos de experiência, nos dedicamos a fornecer soluções inovadoras, seguras e eficientes para clientes residenciais, comerciais e industriais.
                 </p>
                 <p className="text-muted-foreground md:text-lg">
                   Nosso compromisso é com a qualidade, a confiabilidade e a satisfação total do cliente, utilizando tecnologia de ponta para garantir resultados superiores em cada projeto.

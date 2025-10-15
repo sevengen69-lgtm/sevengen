@@ -21,7 +21,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Zap className="h-6 w-6 text-primary" />
-          <span className="font-headline text-xl font-bold">VoltaTech</span>
+          <span className="font-headline text-xl font-bold">Sevengen</span>
         </Link>
         
         <nav className="hidden md:flex md:items-center md:gap-6">

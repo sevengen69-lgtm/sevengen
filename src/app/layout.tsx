@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'VoltaTech Solutions',
+  title: 'Sevengen Automação',
   description: 'Especialistas em elétrica e automação industrial e residencial.',
 };
 
