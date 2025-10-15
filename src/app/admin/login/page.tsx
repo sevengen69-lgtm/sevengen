@@ -12,17 +12,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { doc, getDoc } from 'firebase/firestore';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,15 +33,24 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!auth) {
+    if (!auth || !firestore) {
       setError('Serviço de autenticação indisponível.');
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      const from = searchParams.get('from') || '/user/dashboard';
-      router.push(from);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        await auth.signOut();
+        setError('Acesso negado. Esta conta não é de um administrador.');
+      }
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('E-mail ou senha inválidos. Tente novamente.');
@@ -59,9 +69,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login Administrador</CardTitle>
           <CardDescription>
-            Acesse sua conta para continuar.
+            Acesse o painel de gerenciamento.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
@@ -106,14 +116,8 @@ export default function LoginPage() {
           <CardFooter>
             <div className="flex flex-col w-full">
               <Button className="w-full" type="submit">
-                Entrar
+                Acessar Painel
               </Button>
-              <div className="mt-4 text-center text-sm">
-                Não tem uma conta?{' '}
-                <Link href="/signup" className="underline">
-                  Cadastre-se
-                </Link>
-              </div>
               <Button variant="link" asChild className="mt-2">
                 <Link href="/">Voltar para o site</Link>
               </Button>

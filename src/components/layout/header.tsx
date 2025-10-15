@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, Zap } from 'lucide-react';
+import { Menu, Zap, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useUser, useAuth, useFirestore } from '@/firebase';
@@ -12,16 +12,33 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 const navLinks = [
-  { href: '#services', label: 'Serviços' },
-  { href: '#about', label: 'Sobre' },
+  { href: '/#services', label: 'Serviços' },
+  { href: '/#about', label: 'Sobre' },
 ];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  useEffect(() => {
+    if (user && firestore) {
+      const checkAdmin = async () => {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      };
+      checkAdmin();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user, firestore]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -31,14 +48,29 @@ const Header = () => {
 
   const renderAuthButtons = () => {
     if (isUserLoading) {
-      return null; // Don't show buttons while checking auth state
+      return null;
     }
 
     if (user) {
+      if (isAdmin) {
+        return (
+           <>
+             <Button asChild variant="outline">
+                <Link href="/admin/dashboard">Admin</Link>
+             </Button>
+             <Button onClick={handleLogout} variant="ghost">
+                Sair
+             </Button>
+           </>
+        );
+      }
       return (
         <>
           <Button asChild variant="outline">
-            <Link href="/admin/dashboard">Admin</Link>
+            <Link href="/user/dashboard">
+              <UserIcon className="mr-2 h-4 w-4" />
+              Minha Conta
+            </Link>
           </Button>
           <Button onClick={handleLogout} variant="ghost">
             Sair
@@ -49,30 +81,52 @@ const Header = () => {
 
     return (
       <>
+        <Button asChild variant="ghost">
+          <Link href="/login">User</Link>
+        </Button>
+        <Button asChild variant="ghost">
+          <Link href="/admin/login">Admin</Link>
+        </Button>
         <Button asChild>
-          <Link href="/login">Admin</Link>
+          <Link href="/signup">Cadastro</Link>
         </Button>
       </>
     );
   };
   
-    const renderMobileAuthButtons = () => {
+  const renderMobileAuthButtons = () => {
     if (isUserLoading) {
       return null;
     }
 
     if (user) {
+      if (isAdmin) {
+        return (
+          <>
+            <SheetClose asChild>
+              <Button asChild size="lg" className="w-full mt-4">
+                <Link href="/admin/dashboard">Admin Dashboard</Link>
+              </Button>
+            </SheetClose>
+            <SheetClose asChild>
+              <Button onClick={handleLogout} size="lg" className="w-full mt-2" variant="outline">
+                Sair
+              </Button>
+            </SheetClose>
+          </>
+        );
+      }
       return (
         <>
           <SheetClose asChild>
-              <Button asChild size="lg" className="w-full mt-4" variant="outline">
-                  <Link href="/admin/dashboard">Admin</Link>
-              </Button>
+            <Button asChild size="lg" className="w-full mt-4">
+              <Link href="/user/dashboard">Minha Conta</Link>
+            </Button>
           </SheetClose>
           <SheetClose asChild>
-              <Button onClick={handleLogout} size="lg" className="w-full mt-4" variant="ghost">
-                  Sair
-              </Button>
+            <Button onClick={handleLogout} size="lg" className="w-full mt-2" variant="outline">
+              Sair
+            </Button>
           </SheetClose>
         </>
       );
@@ -82,7 +136,17 @@ const Header = () => {
        <>
         <SheetClose asChild>
           <Button asChild size="lg" className="w-full mt-4">
-            <Link href="/login">Admin</Link>
+            <Link href="/login">Login User</Link>
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button asChild size="lg" className="w-full mt-2">
+            <Link href="/admin/login">Login Admin</Link>
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button asChild size="lg" variant="outline" className="w-full mt-2">
+            <Link href="/signup">Cadastro</Link>
           </Button>
         </SheetClose>
       </>
@@ -98,7 +162,7 @@ const Header = () => {
           <span className="font-headline text-xl font-bold">Sevengen</span>
         </Link>
         
-        <nav className="hidden md:flex md:items-center md:gap-6">
+        <nav className="hidden md:flex md:items-center md:gap-4">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -108,7 +172,9 @@ const Header = () => {
               {link.label}
             </Link>
           ))}
-          {renderAuthButtons()}
+          <div className="flex items-center gap-2">
+            {renderAuthButtons()}
+          </div>
         </nav>
         
         <div className="md:hidden">
@@ -120,7 +186,7 @@ const Header = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
-              <nav className="flex h-full flex-col justify-center gap-6">
+              <nav className="flex h-full flex-col justify-center gap-6 text-center">
                 {navLinks.map((link) => (
                   <SheetClose key={link.href} asChild>
                     <Link
@@ -132,7 +198,9 @@ const Header = () => {
                     </Link>
                   </SheetClose>
                 ))}
-                 {renderMobileAuthButtons()}
+                 <div className="flex flex-col items-center gap-4 mt-6">
+                  {renderMobileAuthButtons()}
+                 </div>
               </nav>
             </SheetContent>
           </Sheet>

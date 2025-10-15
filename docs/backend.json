@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -22,7 +23,8 @@
           "type": "string",
           "description": "The user's role.",
           "enum": [
-            "admin"
+            "admin",
+            "customer"
           ]
         }
       },
