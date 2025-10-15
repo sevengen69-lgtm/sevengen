@@ -37,6 +37,9 @@ const Header = () => {
           <Button asChild>
             <Link href="#contact">Solicitar Orçamento</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/login">Login</Link>
+          </Button>
         </nav>
         
         <div className="md:hidden">
@@ -60,6 +63,11 @@ const Header = () => {
                     </Link>
                   </SheetClose>
                 ))}
+                 <SheetClose asChild>
+                  <Button asChild size="lg" className="mt-4" variant="outline">
+                    <Link href="/login">Login</Link>
+                  </Button>
+                </SheetClose>
                 <SheetClose asChild>
                   <Button asChild size="lg" className="mt-4">
                     <Link href="#contact">Solicitar Orçamento</Link>
