@@ -42,23 +42,28 @@ export default function AdminLoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check if the user is an admin
       const userDocRef = doc(firestore, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data().role === 'admin') {
-        router.push('/admin');
+      
+      if (userDoc.exists()) {
+        if (userDoc.data().role === 'admin') {
+          router.push('/admin');
+        } else {
+          await auth.signOut();
+          setError('Acesso negado. Você não tem permissão de administrador.');
+        }
       } else {
         await auth.signOut();
-        setError('Acesso negado. Esta área é restrita para administradores.');
+        setError('Usuário não encontrado no banco de dados. A conta pode não estar configurada corretamente.');
       }
 
     } catch (err: any) {
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        setError('E-mail ou senha inválidos. Tente novamente.');
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('E-mail ou senha inválidos.');
       } else {
-        setError('Falha ao fazer login. Verifique seu e-mail e senha.');
+        setError('Ocorreu um erro inesperado durante o login. Tente novamente.');
+        console.error('Login error:', err);
       }
-      console.error(err);
     }
   };
 
