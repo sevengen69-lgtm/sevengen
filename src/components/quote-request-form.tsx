@@ -18,6 +18,7 @@ const formSchema = z
     name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
     email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }).optional().or(z.literal('')),
     phone: z.string().optional(),
+    company: z.string().optional(),
     message: z.string().optional(),
   })
   .superRefine((data, ctx) => {
@@ -54,6 +55,7 @@ export default function QuoteRequestForm() {
       name: '',
       email: '',
       phone: '',
+      company: '',
       message: '',
     },
   });
@@ -128,6 +130,19 @@ export default function QuoteRequestForm() {
               <FormLabel>Telefone</FormLabel>
               <FormControl>
                 <Input placeholder="(XX) XXXXX-XXXX" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="company"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Empresa (Opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Nome da sua empresa" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

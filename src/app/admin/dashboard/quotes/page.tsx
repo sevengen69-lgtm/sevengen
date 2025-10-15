@@ -18,7 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Phone, Calendar, Trash2, Edit } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Trash2, Edit, Building } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminQuotesPage() {
@@ -108,7 +108,7 @@ export default function AdminQuotesPage() {
   
   const openDetailsModal = (request: QuoteRequest) => {
     setSelectedRequest(request);
-    setEditableRequestData({ name: request.name, email: request.email, phone: request.phone, status: request.status });
+    setEditableRequestData({ name: request.name, email: request.email, phone: request.phone, company: request.company, status: request.status });
     setIsModalOpen(true);
   };
   
@@ -120,12 +120,18 @@ export default function AdminQuotesPage() {
   const renderRequestCard = (request: QuoteRequest) => (
     <Card key={request.id} className="flex flex-col">
         <CardHeader>
-            <CardTitle className="flex justify-between items-center text-lg">
-                <span>{request.name}</span>
+            <CardTitle className="flex justify-between items-start text-lg">
+                <span className="flex-1">{request.name}</span>
                 <Badge variant={request.status === 'pending' ? 'destructive' : 'secondary'}>
                     {request.status === 'pending' ? 'Pendente' : 'Contatado'}
                 </Badge>
             </CardTitle>
+            {request.company && (
+              <p className="flex items-center text-sm font-medium text-muted-foreground pt-1">
+                <Building className="w-4 h-4 mr-2" />
+                {request.company}
+              </p>
+            )}
         </CardHeader>
         <CardContent className="flex-grow space-y-3">
             <div className="flex items-center text-sm text-muted-foreground">
@@ -155,10 +161,16 @@ export default function AdminQuotesPage() {
   const renderClosedRequestCard = (request: QuoteRequest) => (
     <Card key={request.id} className="flex flex-col bg-muted/50">
         <CardHeader>
-            <CardTitle className="flex justify-between items-center text-lg">
-                <span>{request.name}</span>
+            <CardTitle className="flex justify-between items-start text-lg">
+                <span className="flex-1">{request.name}</span>
                 <Badge variant='success'>Fechado</Badge>
             </CardTitle>
+            {request.company && (
+              <p className="flex items-center text-sm font-medium text-muted-foreground pt-1">
+                <Building className="w-4 h-4 mr-2" />
+                {request.company}
+              </p>
+            )}
         </CardHeader>
         <CardContent className="flex-grow space-y-3">
             <div className="flex items-center text-sm text-muted-foreground">
@@ -251,6 +263,10 @@ export default function AdminQuotesPage() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <label htmlFor="phone" className="col-span-1 text-right font-semibold text-muted-foreground">Telefone</label>
                 <Input id="phone" name="phone" value={editableRequestData.phone || ''} onChange={handleInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="company" className="col-span-1 text-right font-semibold text-muted-foreground">Empresa</label>
+                <Input id="company" name="company" value={editableRequestData.company || ''} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-start gap-4">
                 <span className="col-span-1 mt-1 text-right font-semibold text-muted-foreground">Mensagem</span>

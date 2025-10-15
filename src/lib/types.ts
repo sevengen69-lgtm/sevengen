@@ -6,6 +6,7 @@ export interface QuoteRequest {
   name: string;
   email: string;
   phone?: string;
+  company?: string;
   message: string;
   status: 'pending' | 'contacted' | 'closed';
   createdAt: Timestamp;
