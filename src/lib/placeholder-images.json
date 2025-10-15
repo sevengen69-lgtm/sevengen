@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero-background",
-      "description": "Painéis elétricos em um ambiente industrial.",
-      "imageUrl": "https://picsum.photos/seed/electric/1920/1080",
-      "imageHint": "electrical panel"
+      "description": "Equipamentos de automação industrial.",
+      "imageUrl": "https://picsum.photos/seed/equipment/1920/1080",
+      "imageHint": "industrial equipment"
     },
     {
       "id": "about-us",
