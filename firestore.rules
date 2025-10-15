@@ -1,89 +1,76 @@
 /**
- * @fileoverview Firestore Security Rules for Prototyping.
- *
- * Core Philosophy:
- * This ruleset prioritizes security by enforcing strict access control based on user roles.
- * It avoids complex data validation to allow for rapid prototyping and schema iteration.
+ * @file Overview
+ * This ruleset enforces a basic security model that allows public creation of quote requests
+ * and restricts user data to only the owning user.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information. Accessible only by the user themselves (owner-only).
- * - /quoteRequests/{quoteId}: Stores quote requests. Listable by all authenticated users, but create/update/delete operations are only permitted for users with the 'admin' role.
+ * - /users/{userId}: Stores user profile information, accessible only to the user.
+ * - /quoteRequests/{quoteId}: Stores quote requests, publicly creatable.
  *
  * Key Security Decisions:
- * - User listing is not allowed to protect user privacy.
- * - The 'admin' role is required for managing quote requests, providing a basic level of administrative control.
- *
- * Denormalization for Authorization:
- * - The User document contains a `role` field, which is used to determine administrative privileges. This avoids the need for separate role lookup queries.
+ * - Users can only access their own data under /users/{userId}.
+ * - Quote requests are publicly creatable without authentication.
+ * - Listing of users is disallowed for privacy.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure user profiles. Only the user can read/write their own profile.
+     * @description Secure user profiles.
      * @path /users/{userId}
-     * @allow (create, update, delete) if the user's auth UID matches the {userId} and the action is performed by the signed-in user.
-     * @allow (get) if the user's auth UID matches the {userId}.
-     * @deny (list) Listing all users is not permitted.
-     * @deny (create, update, delete) if the user's auth UID does not match the {userId}.
+     * @allow (read, write) if the user is the owner of the profile.
+     * @deny (read, write) if the user is not the owner of the profile.
      * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) ;
-      allow delete: if isExistingOwner(userId);
+      // Only allow authenticated users to read their own profile.
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false; // Listing all users is not permitted.
+
+      // Allow the user to create their own profile if the UID matches.
+      allow create: if isSignedIn() && isOwner(userId);
+
+      // Only allow the user to update their own profile.
+      allow update: if isSignedIn() && isExistingOwner(userId);
+
+      // Only allow the user to delete their own profile.
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Secure quote requests. All users can read them, but only admins can manage (create, update, delete).
+     * @description Allow public creation of quote requests.
      * @path /quoteRequests/{quoteId}
-     * @allow (list, get) All authenticated users can list and get quote requests.
-     * @allow (create, update, delete) only users with the 'admin' role can create, update, or delete quote requests.
-     * @deny (create, update, delete) if the user does not have the 'admin' role.
-     * @principle Allows public read access with owner-only writes.
+     * @allow (create) Anyone can create a quote request.
+     * @allow (read) Anyone can read a quote request.
+     *
+     * @deny (update, delete) Only authenticated users can update or delete quote requests. // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @principle Allows public access for quote requests while restricting updates.
      */
     match /quoteRequests/{quoteId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
+      // Anyone can read a quote request.
+      allow get, list: if true;
 
-    // --- Helper Functions ---
+      // Anyone can create a quote request.
+      allow create: if true;
 
-    /**
-     * @description Checks if the user is signed in.
-     * @return {boolean} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
+      // No Update/Delete allowed as per prototype request.
+      allow update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
+  }
 
-    /**
-     * @description Checks if the user is the owner of the document, based on the userId.
-     * @param {string} userId The user ID to compare against request.auth.uid.
-     * @return {boolean} True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
+  // Helper function to determine if the user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
+  }
 
-    /**
-     * @description Checks if the user is the owner of the document and the document exists.
-     * @param {string} userId The user ID to compare against request.auth.uid.
-     * @return {boolean} True if the user is the owner and document exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-    }
+  // Helper function to determine if the user is the owner of the document.
+  function isOwner(userId) {
+    return request.auth.uid == userId;
+  }
 
-    /**
-     * @description Checks if the user has the 'admin' role.
-     * @return {boolean} True if the user has the 'admin' role, false otherwise.
-     */
-    function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
+    // Helper function to determine if the user is the existing owner of the document.
+  function isExistingOwner(userId) {
+    return isSignedIn() && isOwner(userId) && resource != null;
   }
 }
