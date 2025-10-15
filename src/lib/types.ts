@@ -20,6 +20,7 @@ export interface ServiceContent {
   icon: IconName;
   title: string;
   description: string;
+  status?: 'active' | 'coming_soon';
 }
 
 export interface HomepageContent {

@@ -8,11 +8,13 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import QuoteRequestForm from '@/components/quote-request-form';
 import { useDoc, useMemoFirebase } from '@/firebase';
-import { doc, DocumentData } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase/provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getIcon } from '@/lib/get-icon';
 import type { HomepageContent, ServiceContent } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const HeroSectionLoading = () => (
   <section className="relative h-[60vh] w-full bg-muted md:h-[70vh]">
@@ -126,11 +128,22 @@ export default function Home() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {content.services?.map((service: ServiceContent) => {
                   const Icon = getIcon(service.icon);
+                  const isComingSoon = service.status === 'coming_soon';
                   return (
                      <Card
                       key={service.title}
-                      className="flex flex-col overflow-hidden rounded-lg border-2 border-transparent shadow-lg transition-all hover:border-primary hover:shadow-2xl hover:-translate-y-2"
+                      className={cn(
+                        "relative flex flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all",
+                        isComingSoon 
+                          ? "cursor-not-allowed border-dashed" 
+                          : "border-transparent hover:border-primary hover:shadow-2xl hover:-translate-y-2"
+                      )}
                     >
+                      {isComingSoon && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-[2px]">
+                          <Badge variant="secondary" className="text-sm">Em Breve</Badge>
+                        </div>
+                      )}
                       <CardHeader className="items-center text-center">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                           {Icon && <Icon className="h-8 w-8" />}
@@ -199,4 +212,3 @@ export default function Home() {
     </div>
   );
 }
-

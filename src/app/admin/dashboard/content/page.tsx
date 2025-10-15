@@ -16,10 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { defaultServices } from '@/lib/services';
-import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { iconMap } from '@/lib/get-icon';
 import { Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import type { HomepageContent, IconName } from '@/lib/types';
 
 
@@ -27,6 +27,7 @@ const serviceSchema = z.object({
   icon: z.custom<IconName>(),
   title: z.string().min(1, 'O título do serviço é obrigatório.'),
   description: z.string().min(1, 'A descrição do serviço é obrigatória.'),
+  status: z.enum(['active', 'coming_soon']).optional(),
 });
 
 const formSchema = z.object({
@@ -301,6 +302,26 @@ export default function ContentManagementPage() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name={`services.${index}.status`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                          <div className="space-y-0.5">
+                            <FormLabel>Em Breve</FormLabel>
+                            <FormMessage />
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value === 'coming_soon'}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked ? 'coming_soon' : 'active');
+                              }}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                     <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)} className="absolute top-2 right-2">
                         <Trash2 className="h-4 w-4" />
                     </Button>
@@ -309,7 +330,7 @@ export default function ContentManagementPage() {
                  <Button
                     type="button"
                     variant="outline"
-                    onClick={() => append({ icon: 'Zap', title: '', description: '' })}
+                    onClick={() => append({ icon: 'Zap', title: '', description: '', status: 'active' })}
                 >
                     Adicionar Serviço
                 </Button>
@@ -327,5 +348,3 @@ export default function ContentManagementPage() {
     </div>
   );
 }
-
-    
