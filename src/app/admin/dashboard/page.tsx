@@ -19,21 +19,27 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Aguarda a finalização do carregamento do usuário e a disponibilidade do firestore
     if (isUserLoading || !firestore) {
       return; 
     }
+    
+    // Se não houver usuário logado, redireciona para o login
     if (!user) {
       router.replace('/login?from=/admin/dashboard'); 
       return;
     }
 
     const checkAdminRole = async () => {
+      // Define o UID do usuário a partir do objeto 'user'
       const userDocRef = doc(firestore, 'users', user.uid);
       try {
         const userDoc = await getDoc(userDocRef);
+        // Verifica se o documento existe e se a função é 'admin'
         if (userDoc.exists() && userDoc.data().role === 'admin') {
           setIsAuthorized(true);
         } else {
+          // Se não for admin, marca como não autorizado e redireciona
           setIsAuthorized(false);
           router.replace('/'); 
         }
@@ -42,6 +48,7 @@ export default function AdminDashboardPage() {
         setIsAuthorized(false);
         router.replace('/'); 
       } finally {
+        // Finaliza o estado de carregamento
         setIsLoading(false);
       }
     };
@@ -59,6 +66,7 @@ export default function AdminDashboardPage() {
     }
   };
   
+  // Tela de carregamento enquanto as permissões são verificadas
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -70,6 +78,7 @@ export default function AdminDashboardPage() {
     );
   }
   
+  // Tela para usuários que conseguiram logar mas não são administradores
   if (!isAuthorized) {
      return (
       <div className="flex h-screen items-center justify-center">
@@ -84,6 +93,7 @@ export default function AdminDashboardPage() {
     );
   }
 
+  // Painel de Administrador para usuários autorizados
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
