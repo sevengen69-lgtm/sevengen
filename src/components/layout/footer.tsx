@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Zap } from 'lucide-react';
+import { Phone, Zap } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,9 +11,15 @@ const Footer = () => {
           <Zap className="h-6 w-6 text-primary" />
           <span className="font-headline text-lg font-bold">Sevengen</span>
         </Link>
-        <p className="text-sm text-muted-foreground">
-          &copy; {currentYear} Sevengen Automação. Todos os direitos reservados.
-        </p>
+        <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground md:flex-row md:gap-4">
+          <a href="tel:+5541997884294" className="flex items-center gap-2 transition-colors hover:text-primary">
+            <Phone className="h-4 w-4" />
+            (41) 99788-4294
+          </a>
+          <p className="text-center md:text-left">
+            &copy; {currentYear} Sevengen Automação. Todos os direitos reservados.
+          </p>
+        </div>
       </div>
     </footer>
   );
