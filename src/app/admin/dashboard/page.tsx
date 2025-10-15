@@ -53,9 +53,9 @@ export default function AdminDashboardPage() {
   }, [user, isUserLoading, router, firestore]);
 
   const quoteRequestsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !isAdmin) return null; // Only run query if user is an admin
     return query(collection(firestore, 'quoteRequests'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, isAdmin]);
 
   const { data: quoteRequests, isLoading: isLoadingQuotes } = useCollection<QuoteRequest>(quoteRequestsQuery);
 
