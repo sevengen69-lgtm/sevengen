@@ -9,8 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { initializeFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp, Firestore } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -21,7 +22,15 @@ const formSchema = z.object({
 
 export default function QuoteRequestForm() {
   const { toast } = useToast();
-  const firestore = useFirestore();
+  // State to hold the firestore instance
+  const [firestore, setFirestore] = useState<Firestore | null>(null);
+
+  // Initialize Firebase on the client and get the firestore instance
+  useEffect(() => {
+    const { firestore: fs } = initializeFirebase();
+    setFirestore(fs);
+  }, []);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -121,7 +130,7 @@ export default function QuoteRequestForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" size="lg" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" size="lg" disabled={form.formState.isSubmitting || !firestore}>
           {form.formState.isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
         </Button>
       </form>
