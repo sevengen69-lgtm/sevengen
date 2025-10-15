@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { doc, getDoc } from 'firebase/firestore';
 
 const navLinks = [
   { href: '#services', label: 'Serviços' },
@@ -17,14 +18,119 @@ const navLinks = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user && firestore) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        }
+      } else {
+        setUserRole(null);
+      }
+    };
+
+    fetchUserRole();
+  }, [user, firestore]);
+
+
   const handleLogout = async () => {
+    if (!auth) return;
     await signOut(auth);
     router.push('/');
   };
+
+  const renderAuthButtons = () => {
+    if (isUserLoading) {
+      return null; // Don't show buttons while checking auth state
+    }
+
+    if (user) {
+      return (
+        <>
+          {userRole === 'admin' && (
+            <Button asChild variant="outline">
+              <Link href="/admin">Admin</Link>
+            </Button>
+          )}
+           {userRole === 'customer' && (
+            <Button asChild variant="outline">
+              <Link href="/dashboard">Minha Conta</Link>
+            </Button>
+          )}
+          <Button onClick={handleLogout} variant="ghost">
+            Sair
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Button asChild variant="ghost">
+          <Link href="/login">Login</Link>
+        </Button>
+        <Button asChild>
+          <Link href="/signup">Cadastre-se</Link>
+        </Button>
+      </>
+    );
+  };
+  
+    const renderMobileAuthButtons = () => {
+    if (isUserLoading) {
+      return null; // Don't show buttons while checking auth state
+    }
+
+    if (user) {
+      return (
+        <>
+          {userRole === 'admin' && (
+             <SheetClose asChild>
+                <Button asChild size="lg" className="w-full mt-4" variant="outline">
+                    <Link href="/admin">Admin</Link>
+                </Button>
+            </SheetClose>
+          )}
+           {userRole === 'customer' && (
+            <SheetClose asChild>
+                <Button asChild size="lg" className="w-full mt-4" variant="outline">
+                    <Link href="/dashboard">Minha Conta</Link>
+                </Button>
+            </SheetClose>
+          )}
+            <SheetClose asChild>
+                <Button onClick={handleLogout} size="lg" className="w-full mt-4" variant="ghost">
+                    Sair
+                </Button>
+            </SheetClose>
+        </>
+      );
+    }
+
+    return (
+       <>
+        <SheetClose asChild>
+          <Button asChild size="lg" className="mt-4" variant="ghost">
+            <Link href="/login">Login</Link>
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button asChild size="lg" className="mt-4">
+            <Link href="/signup">Cadastre-se</Link>
+          </Button>
+        </SheetClose>
+      </>
+    );
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,18 +150,7 @@ const Header = () => {
               {link.label}
             </Link>
           ))}
-          <Button asChild>
-            <Link href="#contact">Solicitar Orçamento</Link>
-          </Button>
-          {user ? (
-            <Button onClick={handleLogout} variant="outline">
-              Sair
-            </Button>
-          ) : (
-            <Button asChild variant="outline">
-              <Link href="/login">Login</Link>
-            </Button>
-          )}
+          {renderAuthButtons()}
         </nav>
         
         <div className="md:hidden">
@@ -79,22 +174,7 @@ const Header = () => {
                     </Link>
                   </SheetClose>
                 ))}
-                 <SheetClose asChild>
-                  {user ? (
-                    <Button onClick={handleLogout} size="lg" className="mt-4" variant="outline">
-                      Sair
-                    </Button>
-                  ) : (
-                    <Button asChild size="lg" className="mt-4" variant="outline">
-                      <Link href="/login">Login</Link>
-                    </Button>
-                  )}
-                </SheetClose>
-                <SheetClose asChild>
-                  <Button asChild size="lg" className="mt-4">
-                    <Link href="#contact">Solicitar Orçamento</Link>
-                  </Button>
-                </SheetClose>
+                 {renderMobileAuthButtons()}
               </nav>
             </SheetContent>
           </Sheet>

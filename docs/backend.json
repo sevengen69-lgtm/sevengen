@@ -1,5 +1,31 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Authentication."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role.",
+          "enum": ["admin", "customer"]
+        }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
     "QuoteRequest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "QuoteRequest",
@@ -9,6 +35,10 @@
         "id": {
           "type": "string",
           "description": "Unique identifier for the quote request."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who submitted the request."
         },
         "serviceType": {
           "type": "string",
@@ -61,6 +91,22 @@
   "firestore": {
     "structure": [
       {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "Unique identifier for the user, matching Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
         "path": "/quoteRequests/{quoteRequestId}",
         "definition": {
           "entityName": "QuoteRequest",
@@ -76,7 +122,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to store quote requests submitted by users.  Since quote requests are not directly tied to user accounts and are more akin to a global submission, they are stored in a top-level collection called 'quoteRequests'.  This structure allows for easy querying and management of all quote requests, regardless of the user. There are no subcollections, therefore denormalization is not used. Because there is no nested data, atomicity is already preserved. Segregation is not used because all documents in `quoteRequests` have a similar security posture. To allow `list` operations, the security rules will ensure that only authenticated users can read quote requests they created. This is accomplished by verifying that `request.auth.uid` matches the `userId` associated with the `quoteRequest`. If anonymous auth is enabled, the user will not be able to see existing requests."
+    ]
   }
 }

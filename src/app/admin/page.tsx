@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useMemoFirebase } from '@/firebase/provider';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import {
@@ -49,16 +49,32 @@ export default function AdminPage() {
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
 
-  useEffect(() => {
-    // If auth is done loading and there's no user, redirect to login.
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
+ useEffect(() => {
+    const checkAdmin = async () => {
+      // Don't do anything while auth is loading
+      if (isUserLoading) return;
+
+      // If auth is done and there's no user, redirect to admin login
+      if (!user) {
+        router.push('/admin/login');
+        return;
+      }
+
+      // If there is a user, check their role
+      if (firestore) {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+          // If not an admin, redirect to home
+          router.push('/');
+        }
+      }
+    };
+
+    checkAdmin();
+  }, [user, isUserLoading, router, firestore]);
 
   const quoteRequestsQuery = useMemoFirebase(
     () => {
-        // Only create the query if we have a logged-in user.
         if (!firestore || !user) return null;
         return query(collection(firestore, 'quoteRequests'), orderBy('requestDate', 'desc'));
     },

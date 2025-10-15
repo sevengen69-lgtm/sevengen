@@ -11,40 +11,47 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const auth = useAuth();
+  const firestore = useFirestore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const from = searchParams.get('from') || '/';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); // Limpa erros anteriores
-    if (!auth) {
+    setError('');
+    if (!auth || !firestore) {
       setError('Serviço de autenticação indisponível.');
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push(from); // Redirect to the previous page or home
-    } catch (err: any) {
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        setError('E-mail ou senha inválidos. Tente novamente.');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if the user is an admin
+      const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        router.push('/admin');
       } else {
-        setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+        await auth.signOut();
+        setError('Acesso negado. Esta área é restrita para administradores.');
       }
+
+    } catch (err: any) {
+      setError('Falha ao fazer login. Verifique seu e-mail e senha.');
       console.error(err);
     }
   };
@@ -57,9 +64,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Login do Administrador</CardTitle>
           <CardDescription>
-            Acesse sua conta para gerenciar seus projetos e orçamentos.
+            Acesso restrito ao painel administrativo.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
@@ -69,7 +76,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="admin@example.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -106,12 +113,6 @@ export default function LoginPage() {
                <Button className="w-full" type="submit">
                 Entrar
               </Button>
-               <div className="mt-4 text-center text-sm">
-                Não tem uma conta?{' '}
-                <Link href="/signup" className="underline">
-                  Cadastre-se
-                </Link>
-              </div>
               <Button variant="link" asChild className="mt-2">
                 <Link href="/">Voltar para o site</Link>
               </Button>
