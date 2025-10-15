@@ -45,10 +45,10 @@ const defaultValues: z.infer<typeof formSchema> = {
     logoUrl: '',
     heroTitle: 'Sevengen Automação',
     heroSubtitle: 'Excelência em Elétrica e Automação para Indústria, Residências e Hospitais.',
-    heroImageUrl: 'https://picsum.photos/seed/equipment/1920/1080',
+    heroImageUrl: 'https://innvoltpaineis.com.br/wp-content/uploads/2022/08/2022-09-05-instalacoes-eletricas-prediais.jpg',
     aboutTitle: 'Sobre a Sevengen',
     aboutText: 'A Sevengen Automação é sua parceira de confiança em serviços elétricos e de automação. Com uma equipe de especialistas qualificados e anos de experiência, nos dedicamos a fornecer soluções inovadoras, seguras e eficientes para clientes residenciais, comerciais e industriais.\n\nNosso compromisso é com a qualidade, a confiabilidade e a satisfação total do cliente, utilizando tecnologia de ponta para garantir resultados superiores em cada projeto.',
-    aboutImageUrl: 'https://picsum.photos/seed/automation_panel/600/400',
+    aboutImageUrl: 'https://www.comanderautomacao.com.br/wp-content/uploads/2021/09/climatizacao-de-paineis-eletricos.jpg',
     services: defaultServices as any,
 }
 
@@ -327,3 +327,5 @@ export default function ContentManagementPage() {
     </div>
   );
 }
+
+    
