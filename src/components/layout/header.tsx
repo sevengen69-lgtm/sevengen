@@ -26,10 +26,14 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // This effect is kept for potential future use where a distinction
+    // between admin and customer is needed again in the UI, but it's not
+    // currently used to gate access to the admin button itself.
     if (user && firestore) {
       const checkAdmin = async () => {
         const userDocRef = doc(firestore, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
+        // This check is for UI display purposes, not for security.
         if (userDoc.exists() && userDoc.data().role === 'admin') {
           setIsAdmin(true);
         } else {
@@ -64,15 +68,10 @@ const Header = () => {
     if (user) {
       return (
         <>
-          {isAdmin ? (
-            <Button asChild variant="outline">
-              <Link href="/admin/dashboard">Admin</Link>
-            </Button>
-          ) : (
-             <Button asChild variant="outline">
-               <Link href="/dashboard">{getGreeting()}</Link>
-             </Button>
-          )}
+          {/* Always show Admin link for any logged-in user for simplicity */}
+          <Button asChild variant="outline">
+            <Link href="/admin/dashboard">Admin</Link>
+          </Button>
           <Button onClick={handleLogout} variant="ghost">
             Sair
           </Button>
@@ -100,19 +99,11 @@ const Header = () => {
     if (user) {
       return (
         <>
-          {isAdmin ? (
-             <SheetClose asChild>
-                <Button asChild size="lg" className="w-full mt-4" variant="outline">
-                    <Link href="/admin/dashboard">Admin</Link>
-                </Button>
-            </SheetClose>
-          ) : (
-            <SheetClose asChild>
-                <Button asChild size="lg" className="w-full mt-4" variant="outline">
-                    <Link href="/dashboard">{getGreeting()}</Link>
-                </Button>
-            </SheetClose>
-          )}
+          <SheetClose asChild>
+              <Button asChild size="lg" className="w-full mt-4" variant="outline">
+                  <Link href="/admin/dashboard">Admin</Link>
+              </Button>
+          </SheetClose>
           <SheetClose asChild>
               <Button onClick={handleLogout} size="lg" className="w-full mt-4" variant="ghost">
                   Sair
