@@ -10,6 +10,7 @@ import { useUser, useAuth, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const navLinks = [
   { href: '/#services', label: 'Serviços' },
@@ -175,9 +176,11 @@ const Header = () => {
           <div className="flex items-center gap-2">
             {renderAuthButtons()}
           </div>
+          <ThemeToggle />
         </nav>
         
-        <div className="md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
