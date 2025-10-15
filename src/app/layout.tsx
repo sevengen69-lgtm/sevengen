@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Sevengen Automação',
-  description: 'Especialistas em elétrica e automação industrial e residencial.',
+  description: 'Especialistas em elétrica e automação industrial, residencial e hospitalar.',
 };
 
 export default function RootLayout({

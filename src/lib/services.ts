@@ -14,12 +14,12 @@ export const services: Service[] = [
   },
   {
     title: 'Manutenção de Máquinas',
-    description: 'Reparo de máquinas e equipamentos de uso geral para indústria e comércio.',
+    description: 'Reparo de máquinas e equipamentos para indústria, comércio e hospitais.',
     icon: Wrench,
   },
   {
     title: 'Instalação Elétrica',
-    description: 'Serviços de instalação e manutenção elétrica residencial, comercial e industrial.',
+    description: 'Serviços de instalação e manutenção elétrica residencial, comercial e hospitalar.',
     icon: Zap,
   },
   {
@@ -29,7 +29,7 @@ export const services: Service[] = [
   },
   {
     title: 'Serviços de Engenharia',
-    description: 'Consultoria e desenvolvimento de projetos de engenharia elétrica e automação.',
+    description: 'Consultoria e projetos de engenharia elétrica e automação industrial e predial.',
     icon: HardHat,
   },
   {

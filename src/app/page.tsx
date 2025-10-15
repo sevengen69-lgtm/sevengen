@@ -33,7 +33,7 @@ export default function Home() {
               Sevengen Automação
             </h1>
             <p className="max-w-3xl text-lg text-primary-foreground/90 md:text-xl">
-              Excelência em Elétrica e Automação para Indústria e Residências.
+              Excelência em Elétrica e Automação para Indústria, Residências e Hospitais.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Button size="lg" asChild>
