@@ -1,36 +1,32 @@
-/**
- * @file Firebase Security Rules for Firestore.
- *
- * @Core Philosophy: This ruleset enforces a security model where only authenticated users can list quote requests.
- *   Write operations are forbidden for all users.
- * @Data Structure: Quote requests are stored in a top-level collection `/quoteRequests/{quoteRequestId}`.
- * @Key Security Decisions: Listing `quoteRequests` is only allowed for authenticated users. Writes are forbidden.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Allows authenticated users to list quote requests. Writes are forbidden.
-     * @path /quoteRequests/{quoteRequestId}
-     * @allow (list) User with valid authentication attempts to list quote requests.
-     * @deny (list) Unauthenticated user attempts to list quote requests.
-     * @deny (create) Any user attempts to create a quote request.
-     * @deny (update) Any user attempts to update a quote request.
-     * @deny (delete) Any user attempts to delete a quote request.
-     * @principle Only authenticated users are able to list quote requests.
-     */
-    match /quoteRequests/{quoteRequestId} {
-      allow get: if false;
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    // Helper function to determine if a user is signed in.
+    // isSignedIn Helper Function
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    match /users/{userId} {
+      // Helper function to check if the authenticated user is the owner of the document.
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Allow a user to create their own profile if the UID matches the document ID.
+      allow create: if isOwner(userId);
+
+      // Allow a user to get their own profile.
+      allow get: if isOwner(userId);
+
+      // Allow a user to list all users
+      allow list: if false;
+
+      // Allow a user to update their own profile.
+      allow update: if isOwner(userId);
+
+      // Allow a user to delete their own profile.
+      allow delete: if isOwner(userId);
     }
   }
 }
