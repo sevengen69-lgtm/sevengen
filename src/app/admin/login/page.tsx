@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     if (!auth || !firestore) {
-      setError('Serviço de autenticação indisponível.');
+      setError('Serviço de autenticação ou banco de dados indisponível.');
       return;
     }
     try {
