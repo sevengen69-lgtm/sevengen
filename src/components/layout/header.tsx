@@ -50,7 +50,7 @@ const Header = () => {
     return (
       <>
         <Button asChild>
-          <Link href="/login">Login</Link>
+          <Link href="/login">Admin</Link>
         </Button>
       </>
     );
@@ -82,7 +82,7 @@ const Header = () => {
        <>
         <SheetClose asChild>
           <Button asChild size="lg" className="w-full mt-4">
-            <Link href="/login">Login</Link>
+            <Link href="/login">Admin</Link>
           </Button>
         </SheetClose>
       </>

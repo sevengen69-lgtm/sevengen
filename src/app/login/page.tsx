@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
@@ -21,14 +21,12 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const auth = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const from = searchParams.get('from') || '/admin/dashboard'; // Default to admin dashboard
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +38,8 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // On successful login, always redirect to the intended page (admin dashboard by default)
-      router.push(from);
+      // On successful login, always redirect to the admin dashboard
+      router.push('/admin/dashboard');
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('E-mail ou senha inválidos. Tente novamente.');
@@ -107,7 +105,7 @@ export default function LoginPage() {
           <CardFooter>
             <div className="flex flex-col w-full">
               <Button className="w-full" type="submit">
-                Entrar
+                Acessar Painel
               </Button>
               <Button variant="link" asChild className="mt-2">
                 <Link href="/">Voltar para o site</Link>
