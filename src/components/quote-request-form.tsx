@@ -17,7 +17,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
   phone: z.string().optional(),
-  message: z.string().min(10, { message: 'A mensagem deve ter pelo menos 10 caracteres.' }),
+  message: z.string().optional(),
 });
 
 export default function QuoteRequestForm() {
@@ -124,7 +124,7 @@ export default function QuoteRequestForm() {
             <FormItem>
               <FormLabel>Mensagem</FormLabel>
               <FormControl>
-                <Textarea placeholder="Descreva o que você precisa..." className="min-h-[120px]" {...field} />
+                <Textarea placeholder="descreva seu problema ou deixe esse campo em branco que entraremos em contato o mais rápido possível para solucioná-lo" className="min-h-[120px]" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
