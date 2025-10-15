@@ -8,9 +8,9 @@
     },
     {
       "id": "about-us",
-      "description": "Equipe de engenheiros trabalhando juntos.",
-      "imageUrl": "https://picsum.photos/seed/volt2/600/400",
-      "imageHint": "engineers team"
+      "description": "Equipe trabalhando em um painel de automação com CLP.",
+      "imageUrl": "https://picsum.photos/seed/automation_panel/600/400",
+      "imageHint": "automation panel"
     }
   ]
 }
