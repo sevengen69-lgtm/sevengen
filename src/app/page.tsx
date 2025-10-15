@@ -5,6 +5,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { services } from '@/lib/services';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import QuoteRequestForm from '@/components/quote-request-form';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-background');
@@ -101,6 +102,23 @@ export default function Home() {
                   />
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Quote Request Section */}
+        <section id="quote" className="w-full bg-background py-16 md:py-24">
+          <div className="container px-4 md:px-6">
+            <div className="mx-auto mb-12 max-w-2xl text-center">
+              <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                Solicite um Orçamento
+              </h2>
+              <p className="mt-4 text-muted-foreground md:text-lg">
+                Preencha o formulário abaixo e nossa equipe entrará em contato o mais breve possível.
+              </p>
+            </div>
+            <div className="mx-auto max-w-xl">
+              <QuoteRequestForm />
             </div>
           </div>
         </section>
