@@ -34,6 +34,12 @@ const nextConfig: NextConfig = {
         hostname: 'www.comanderautomacao.com.br',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'innvoltpaineis.com.br',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
