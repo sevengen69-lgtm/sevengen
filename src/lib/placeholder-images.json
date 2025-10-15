@@ -2,13 +2,13 @@
   "placeholderImages": [
     {
       "id": "hero-background",
-      "description": "An industrial setting with electrical panels",
-      "imageUrl": "https://picsum.photos/seed/volt1/1920/1080",
+      "description": "Painéis elétricos em um ambiente industrial.",
+      "imageUrl": "https://picsum.photos/seed/electric/1920/1080",
       "imageHint": "electrical panel"
     },
     {
       "id": "about-us",
-      "description": "Team of engineers working together",
+      "description": "Equipe de engenheiros trabalhando juntos.",
       "imageUrl": "https://picsum.photos/seed/volt2/600/400",
       "imageHint": "engineers team"
     }
