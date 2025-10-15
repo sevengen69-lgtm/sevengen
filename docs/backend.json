@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "QuoteRequest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuoteRequest",
+      "type": "object",
+      "description": "Represents a quote request submitted by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the quote request."
+        },
+        "serviceType": {
+          "type": "string",
+          "description": "The type of service the quote is for (e.g., electrical installation, machinery repair)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the service requested."
+        },
+        "contactName": {
+          "type": "string",
+          "description": "Name of the person requesting the quote."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Email address of the person requesting the quote.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "Phone number of the person requesting the quote."
+        },
+        "requestDate": {
+          "type": "string",
+          "description": "Date and time when the quote request was submitted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the quote request (e.g., pending, processing, completed)."
+        }
+      },
+      "required": [
+        "id",
+        "serviceType",
+        "description",
+        "contactName",
+        "contactEmail",
+        "requestDate",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/quoteRequests/{quoteRequestId}",
+        "definition": {
+          "entityName": "QuoteRequest",
+          "schema": {
+            "$ref": "#/backend/entities/QuoteRequest"
+          },
+          "description": "Stores quote requests submitted by users.  Each document represents a single quote request.",
+          "params": [
+            {
+              "name": "quoteRequestId",
+              "description": "Unique identifier for the quote request."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store quote requests submitted by users.  Since quote requests are not directly tied to user accounts and are more akin to a global submission, they are stored in a top-level collection called 'quoteRequests'.  This structure allows for easy querying and management of all quote requests, regardless of the user. There are no subcollections, therefore denormalization is not used. Because there is no nested data, atomicity is already preserved. Segregation is not used because all documents in `quoteRequests` have a similar security posture. To allow `list` operations, the security rules will ensure that only authenticated users can read quote requests they created. This is accomplished by verifying that `request.auth.uid` matches the `userId` associated with the `quoteRequest`. If anonymous auth is enabled, the user will not be able to see existing requests."
+  }
+}
