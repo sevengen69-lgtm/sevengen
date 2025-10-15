@@ -1,8 +1,10 @@
 'use client';
 
+import { useMemo, useEffect } from 'react';
 import { useMemoFirebase } from '@/firebase/provider';
-import { collection } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableHeader,
@@ -17,6 +19,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type QuoteRequestStatus = 'pending' | 'processing' | 'completed';
 
@@ -42,12 +45,27 @@ const statusTranslations: Record<QuoteRequestStatus, string> = {
 
 
 export default function AdminPage() {
+  const router = useRouter();
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    // If auth is done loading and there's no user, redirect to login.
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
   const quoteRequestsQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'quoteRequests') : null),
-    [firestore]
+    () => {
+        // Only create the query if we have a logged-in user.
+        if (!firestore || !user) return null;
+        return query(collection(firestore, 'quoteRequests'), orderBy('requestDate', 'desc'));
+    },
+    [firestore, user]
   );
-  const { data: quoteRequests, isLoading } = useCollection<QuoteRequest>(quoteRequestsQuery);
+  
+  const { data: quoteRequests, isLoading: isLoadingQuotes } = useCollection<QuoteRequest>(quoteRequestsQuery);
 
   const getStatusVariant = (status: QuoteRequest['status']) => {
     switch (status) {
@@ -68,6 +86,30 @@ export default function AdminPage() {
     return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   }
 
+  // Display a loading state while checking for user or fetching data
+  if (isUserLoading || isLoadingQuotes) {
+    return (
+        <div className="flex min-h-screen w-full flex-col">
+            <Header />
+            <main className="flex-1 bg-muted/40 p-4 md:p-10">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Solicitações de Orçamento</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </main>
+            <Footer />
+        </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header />
@@ -77,11 +119,10 @@ export default function AdminPage() {
             <CardTitle>Solicitações de Orçamento</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading && <p>Carregando solicitações...</p>}
-            {!isLoading && (!quoteRequests || quoteRequests.length === 0) && (
+            {(!quoteRequests || quoteRequests.length === 0) && (
               <p>Nenhuma solicitação de orçamento encontrada.</p>
             )}
-            {!isLoading && quoteRequests && quoteRequests.length > 0 && (
+            {quoteRequests && quoteRequests.length > 0 && (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
