@@ -1,0 +1,21 @@
+# Configurações para deploy de um site Next.js no Netlify
+# https://docs.netlify.com/integrations/frameworks/next-js/
+
+[build]
+  # Comando para construir o site
+  command = "next build"
+  
+  # Diretório onde os arquivos estáticos e funções serverless são gerados
+  publish = ".next"
+
+[dev]
+  # Configurações para o ambiente de desenvolvimento local (Netlify Dev)
+  command = "next dev"
+  port = 3000
+  publish = ".next"
+
+[[plugins]]
+  # Plugin essencial para Next.js no Netlify.
+  # Ele configura automaticamente redirects, rewrites e o tratamento
+  # de renderização do lado do servidor (SSR), Server Components, etc.
+  package = "@netlify/plugin-nextjs"
