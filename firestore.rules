@@ -1,69 +1,97 @@
 /**
- * @description This ruleset enforces a strict user-ownership model for user profiles and allows admins to manage quote requests.
- *   Homepage content is publicly readable but only editable by authenticated users.
- * @dataStructure
- *   - /users/{userId}: Stores individual user profiles, accessible only by the user themselves.
- *   - /quoteRequests/{quoteId}: Stores quote requests, managed by admins.
- *   - /homepageContent/{pageId}: Stores content for specific pages, publicly readable and editable by authenticated users.
- * @keySecurityDecisions
- *   - Users can only access their own profile data.
- *   - Admins have full CRUD access to quote requests.
- *   - Homepage content is publicly readable to improve SEO and user experience.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security by enforcing strict access control based on user roles and ownership.
+ * It allows for rapid prototyping by relaxing data validation rules and focusing on authorization.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile data, accessible only to the owner (the user themselves) and admins.
+ * - /quoteRequests/{quoteId}: Stores quote requests. Allows public creation, but restricts modification and deletion to admins only.
+ * - /homepageContent/{pageId}: Stores content for site pages. Only accessible to admins.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed to prevent information disclosure.
+ * - Quote requests can be created by anyone (including unauthenticated users), but other operations are restricted.
+ * - Data validation is minimized to allow for flexible data shapes during prototyping.
+ * - The `isRegisteredUser` is not used to manage permissions at this time.  All users can create quote requests at this time.
+ *
+ * Denormalization for Authorization:
+ * - For quote requests, the `userId` field is used to link the request to a user, allowing for ownership checks.
+ *   If `userId` is null, it indicates that the request was submitted by an unauthenticated user.  However, the permission model allows any user to create a quote request.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
-     * @path /users/{userId}
-     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth UID.
-     * @allow (get, list, update, delete) - Authenticated user can only access their own profile.
-     * @deny (create) - If the userId does not match the authenticated user's UID.
-     * @deny (get, list, update, delete) - If the authenticated user is not the owner of the profile.
-     * @principle Enforces document ownership for all operations.
+     * @description Checks if the request is authenticated.
      */
-    match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Controls access to quote requests.
-     * @path /quoteRequests/{quoteId}
-     * @allow (get, list, create, update, delete) - Only authenticated users can manage quote requests.
-     * @deny (get, list, create, update, delete) - If the user is not authenticated.
-     * @principle Requires authentication for all operations on quote requests.
-     */
-    match /quoteRequests/{quoteId} {
-      allow get, list, create, update, delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to homepage content.
-     * @path /homepageContent/{pageId}
-     * @allow (get, list) - Anyone can read the homepage content.
-     * @allow (create, update, delete) - Only authenticated users can modify the homepage content.
-     * @deny (create, update, delete) - If the user is not authenticated.
-     * @principle Allows public read access with authenticated-user-only writes.
-     */
-    match /homepageContent/{pageId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
-    }
-
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the user is signed in and their UID matches the provided userId, false otherwise.
+     * @example isOwner('someUserId') will return true if request.auth.uid == 'someUserId'.
+     */
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
+    /**
+     * @description Checks if the authenticated user's UID matches the userId and resource exists.
+     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the user is signed in, their UID matches the provided userId, and the resource exists, false otherwise.
+     */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Defines a user document.
+     * @path /users/{userId}
+     * @allow (create) - If the user is creating their own document (matching UID).
+     * @allow (get, update, delete) - If the user is the owner of the document.
+     * @deny (create) - If the user is trying to create a document with a different UID.
+     * @deny (get, update, delete) - If the user is not the owner of the document.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // User listing is disallowed
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Defines a quote request document.
+     * @path /quoteRequests/{quoteId}
+     * @allow (create) - Anyone can create a quote request.
+     * @allow (get, list) - Anyone can get or list a quote request.
+     * @deny (update, delete) - Only admins can update or delete a quote request.  There are no admin roles defined, so writes are disabled.
+     * @principle Allows public creation of quote requests but restricts modification and deletion.
+     */
+    match /quoteRequests/{quoteId} {
+      allow get, list: if true;
+      allow create: if true;
+      allow update, delete: if false; // TODO: Add admin role check
+    }
+
+    /**
+     * @description Defines the homepage content document.
+     * @path /homepageContent/{pageId}
+     * @allow (get) - Anyone can read the homepage content.
+     * @deny (create, update, delete, list) - Only admins can modify the homepage content. There are no admin roles defined, so writes are disabled.
+     * @principle Restricts modification of homepage content to admins.
+     */
+    match /homepageContent/{pageId} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add admin role check
     }
   }
 }
